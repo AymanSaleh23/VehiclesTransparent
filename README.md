@@ -1,10 +1,10 @@
 # Making Vehicles Transparent via V2V Vedio Streaming
 
-## Graduation Project 2022-2023 supported by Valeo co. mentorship program
+### Graduation Project 2022-2023 supported by Valeo co. mentorship program
 
-## This Project is  a 3-phase project implementation
+### This Project is  a 3-phase project implementation
 
-## under supervision of Prof. Khaled El-Shafie
+### under supervision of Prof. Khaled El-Shafie
 
 # System Design and Architecture
 
