@@ -104,5 +104,5 @@ class scanIP:
 
 """ Only for test using windows """
 s = scanIP("Almosalamy","Almosalamy","Alm0salamy2000")
-found = s.get_host_ip(start_ip="192.168.1.9",end_ip="192.168.1.13")
+found = s.check_ips(start_ip="192.168.1.9",end_ip="192.168.1.13")
 print ("available IPs:",found)
