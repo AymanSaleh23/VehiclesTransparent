@@ -58,6 +58,28 @@ def math_model (data = [[2,0],[2,-70],[3,80]], vehicle_lenght=4, direct_distance
     absolute_distances = [ round(sqrt( total_lenght_X[i]**2 + total_lenght_Y[i]**2 - 2 * total_lenght_X[i] * total_lenght_Y[i] * cos(radians(alphas[i])) ),4) for i in range(3)]
     return absolute_distances
 
+
+    
+def frame_to_positions(row_data = [[100,100,960,540],[150,150,640,360],[200,200,192,108]], frame_size = [1920 , 1080]):
+    # row_data is a list of 3 lists
+    # Each list consist of starting_width, starting_height, width, height
+    
+    # Frame_size represents the resolution of camera which is used to capture the frame
+    
+    # For each center ( (x+width/2) , (y+height/2) )
+    centers = [[(row_data[i][0]+(row_data[i][2]/2)) , (row_data[i][1]+(row_data[i][3]/2))] for i in range (0,3) ]
+    
+    
+    # For get positions in ralation of screen resolution
+    
+    posiotion_angels = [map_values_ranges(input_value = c[0], input_range_min=0,input_range_max=frame_size[0], output_range_min = 90, output_range_max= -90) for c in centers]
+    
+    return posiotion_angels
+    
+    
+    
 #########       Test     ##########
 print (map_values_ranges(-90, 90, -90, 2, 12))
 print (math_model())
+print (frame_to_positions(row_data = [[800,100,320,540],[300,340,360,360],[1000,200,880,108]]))
+
