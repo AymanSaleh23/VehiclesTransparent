@@ -4,8 +4,10 @@ Created on Sat Dec  3 20:30:16 2022
 
 @author: as292
 """
-
-import socket, threading, time
+#essential packages
+import socket, time
+#for debug only 
+import threading
 
 class server:
     def __init__(self, ip, port):
@@ -40,7 +42,7 @@ class client:
 
 
 
-###########     APP      ##############
+###########     Test      ##############
 s1 = server("192.168.1.11",65022)
 t1 = threading.Thread(target=s1.send, args = ['sssss'])
 t1.setDaemon(True)
