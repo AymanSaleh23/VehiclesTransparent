@@ -15,8 +15,9 @@ class Angles:
         
     def set_angle(self, angle):
         try:    
-            pwm_ch.ChangeDutyCycle(map_values_ranges(angle, 0, 180, 2, 12) )
+            self.pwm_ch.ChangeDutyCycle(map_values_ranges(angle, 0, 180, 2, 12) )
             time.sleep(0.5)            
 
         except Exception:
-            pwm_ch.stop()
+            self.pwm_ch.stop()
+            

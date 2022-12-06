@@ -9,8 +9,7 @@ import subprocess, re, os
 """  Create class named scanIP  """
 class init_com:
     """ Class Constructor with arguments nameAP, SSID, Password """
-    
-    
+
     """ Function to establish a new connection  """
     @staticmethod
     def create_new_connection(ssid='Almosalamy', password='Alm0salamy2000', machine= 'windows'):
@@ -48,6 +47,7 @@ class init_com:
             command = "netsh wlan add profile filename=\""+ssid+".xml\""+" interface=Wi-Fi"
             os.system(command)
             print (command)
+            
         elif machine == 'linux':
         	#os.system("sudo rfkill block wifi")
         	#open wifi
@@ -73,8 +73,7 @@ class init_com:
     @staticmethod
     def __call__( ssid, password, machine = "linux"):
         init_com.create_new_connection(ssid, password, machine )
-        
-    
+
     """ Function to get the IP, Network """
     @staticmethod
     def get_host(x):
@@ -114,10 +113,12 @@ class init_com:
             empty_string=""
         return found
 
-""" Only for test using windows """
+"""
+###########     Test        ############
 
 init_com.create_new_connection(machine='windows')
 init_com.check_ips('192.168.1.3', '192.168.1.21')
 found = init_com.check_ips(start_ip="192.168.1.9",end_ip="192.168.1.13")
 print ("available IPs:",found)
 
+"""

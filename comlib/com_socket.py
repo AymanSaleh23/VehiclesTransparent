@@ -1,15 +1,8 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Dec  3 20:30:16 2022
 
-@author: as292
-"""
 #essential packages
 import socket, time
-#for debug only 
-import threading
 
-class server:
+class Server:
     def __init__(self, ip, port):
         self.s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.bind((ip, port))          
@@ -22,33 +15,34 @@ class server:
                 print(f"Connection to {self.adr}established")  
                 self.clt.sendall(bytes(data,"utf-8 "))
             except Exception:
-                print("Excpetion connection")
-            
-class client:
+                print("Server Excpetion connection")
+        self.s.close()
+class Client:
     def __init__(self):
-        self.s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
         self.data=None
         
     def rec(self, ip, port):
         while True:
             try:
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.s.connect((ip, port))
                 self.data=self.s.recv(1024)
-                print("Received : "+ self.data.decode("utf-8"))
-                
+                print("Received : " + self.data.decode("utf-8"))
+                self.s.close()  
+                time.sleep(1)
             except Exception:
-                print("Excpetion connection")   
-        self.s.close()
+                print("Client Excpetion connection")
 
-
-
+"""
 ###########     Test      ##############
-s1 = server("192.168.1.11",65022)
+s1 = Server("192.168.1.11",65000)
 t1 = threading.Thread(target=s1.send, args = ['sssss'])
 t1.setDaemon(True)
 t1.start()
 
-c = client()
-t2 = threading.Thread(target=c.rec, args=["192.168.1.11",65022])
+c = Client()
+t2 = threading.Thread(target=c.rec, args=["192.168.1.11",65000])
 t2.setDaemon(True)
 t2.start()
+"""

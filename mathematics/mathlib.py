@@ -1,7 +1,22 @@
 
-from math import pi, sin, cos, sqrt, radians
+from math import sin, cos, sqrt, radians
+
+"""
+    Name        :   map_values_ranges 
+    Description :   Mapping input value from range to another range the relathion is linear equation.
+    Return      :   The mapped value after changing range of input to range of output.
+    Arguments   :   
+        - input_value:      value to be modified based on ranges
+        - input_range_min:  value of the minimum of input range
+        - input_range_max:  value of the maximum of input range
+        - output_range_min: value of the minimum of output range
+        - output_range_max: value of the maximum of output range
+    
+"""
+
 def map_values_ranges(input_value, input_range_min = 90, input_range_max = -90, output_range_min = 2, output_range_max = 12):
     return (input_value - input_range_min) * (output_range_max - output_range_min) / (input_range_max - input_range_min) + output_range_min;
+
 
 def math_model (data = [[2,0],[2,-70],[3,80]], vehicle_lenght=4, direct_distance =4, theta = -50):
     
@@ -76,10 +91,3 @@ def frame_to_positions(row_data = [[100,100,960,540],[150,150,640,360],[200,200,
     
     return posiotion_angels
     
-    
-    
-#########       Test     ##########
-print (map_values_ranges(-90, 90, -90, 2, 12))
-print (math_model())
-print ("{}".format(frame_to_positions(row_data = [[800,100,320,540],[300,340,360,360],[1000,200,880,108]])))
-
