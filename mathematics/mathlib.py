@@ -81,5 +81,5 @@ def frame_to_positions(row_data = [[100,100,960,540],[150,150,640,360],[200,200,
 #########       Test     ##########
 print (map_values_ranges(-90, 90, -90, 2, 12))
 print (math_model())
-print (frame_to_positions(row_data = [[800,100,320,540],[300,340,360,360],[1000,200,880,108]]))
+print ("{}".format(frame_to_positions(row_data = [[800,100,320,540],[300,340,360,360],[1000,200,880,108]])))
 
