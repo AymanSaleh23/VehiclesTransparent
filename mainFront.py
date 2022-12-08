@@ -1,6 +1,4 @@
-import threading
-import time
-from threading import Thread
+import threading, time
 from comlib import com_init_ip, com_socket
 from cv_algorithm import detection_tracking
 
@@ -13,7 +11,7 @@ PARAMETERS = {
     "FRAME_WIDTH": 750,
     "FRAME_HEIGHT": 500,
     "FRAME_TIMER_LIMIT": 30,
-    "HOST_IP": "192.168.1.11",
+    "HOST_IP": "127.0.0.1",
     "SOCKET_FRAME_PORT": 50550,
     "SOCKET_DISCRETE_PORT": 50600,
     "SERVO_LEFT_PIN": 1,
@@ -28,14 +26,13 @@ PARAMETERS = {
     "VEHICLE_LENGTH": 3,
     "VEHICLE_HEIGHT": 2
 }
-from comlib import com_socket
 
 if __name__ == '__main__':
     #   Enable Computer vision feature to detect any vehicle
     computer_vision_object = detection_tracking.ComputerVisionAPP()
 
     #   Make {computer_vision_object} run in thread by Daemon
-    vision_thread = threading.Thread( target= computer_vision_object.run_algorithm, args=[PARAMETERS["FRAME_WIDTH"], PARAMETERS["FRAME_HEIGHT"], PARAMETERS["FRAME_TIMER_LIMIT"]])
+    vision_thread = threading.Thread(target=computer_vision_object.run_algorithm, args=[PARAMETERS["FRAME_WIDTH"], PARAMETERS["FRAME_HEIGHT"], PARAMETERS["FRAME_TIMER_LIMIT"]])
     vision_thread.setDaemon(True)
 
     #   Enable {vision_thread} to start its operations
@@ -47,7 +44,7 @@ if __name__ == '__main__':
 
     #   Set callback functions for sockets {server_socket_frames}, {server_socket_discrete_data}
     thread_socket_frame = threading.Thread(target=server_socket_frames)
-    thread_socket_discrete_data = threading.Thread(target= server_socket_discrete_data)
+    thread_socket_discrete_data = threading.Thread(target=server_socket_discrete_data)
 
     #   Enable Daemon for sockets {server_socket_frames}, {server_socket_discrete_data}
     thread_socket_frame.setDaemon(True)
@@ -79,10 +76,11 @@ if __name__ == '__main__':
     #   Format of this data is list consist of list of 3 lists and the current vehicle length
     #   each sublist consist of 2 elements distance, angle
     #   Example  : data =  [ [[2,0],[2,-70],[3,80]], 4  ]
-    discrete_data_to_send = [0,0]
+    discrete_data_to_send = [None, None]
 
-    #   Declaration of variable {frame_to_send} to hold frames from {computer_vision_object} to be sent by {server_socket_frames}
-    frame_to_send = [0]
+    #   Declaration of variable {frame_to_send}
+    #   Tto hold frames from {computer_vision_object} to be sent by {server_socket_frames}
+    frame_to_send = [None]
 
     while True:
         #   Orient the US to the corresponding angles in format of list of 3 elements [a,b,c]
@@ -92,8 +90,12 @@ if __name__ == '__main__':
 
         #   Enable Ultrasonics to read the distances
         reads = [ultrasonics[i].distance_read() for i in range(0, 3)]
-        #   Construct the data to be sent using discrete socket
+
+        #   Construct the data to be sent using socket {server_socket_discrete_data}
         discrete_data_to_send = [[reads[i], computer_vision_object.data[i]] for i in range(0, 3)].append(PARAMETERS["VEHICLE_LENGTH"])
+
+        #   Get the {frame} data to be sent using socket {server_socket_frames}
+        frame_to_send = computer_vision_object.frame_pure
 
         #   Update data to be sent in sockets in background
         server_socket_discrete_data.to_send = discrete_data_to_send

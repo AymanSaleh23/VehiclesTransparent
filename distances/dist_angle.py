@@ -1,6 +1,6 @@
 
 import time
-
+from mathematics import mathlib
 import RPi.GPIO as GPIO
 class Angles:
     def __init__(self, servo_pin):
@@ -14,8 +14,8 @@ class Angles:
         self.pwm_ch.start(2.5) # Initialization
         
     def set_angle(self, angle):
-        try:    
-            self.pwm_ch.ChangeDutyCycle(map_values_ranges(angle, 0, 180, 2, 12) )
+        try:
+            self.pwm_ch.ChangeDutyCycle(mathlib.map_values_ranges(angle, 0, 180, 2, 12) )
             time.sleep(0.5)            
 
         except Exception:

@@ -87,7 +87,8 @@ class ObjectTracking:
 
 class ComputerVisionAPP:
     def __init__(self):
-        self.data = 0
+        self.data = None
+        self.frame_pure = None
 
     def run_algorithm(self, width=1000, height=700, timer_limit=60):
         # Detection And Tracking Instances
@@ -174,6 +175,7 @@ class ComputerVisionAPP:
                     # Tracking success
                     p1 = (int(bbox[0]), int(bbox[1]))
                     p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+                    self.frame_pure = frame
                     cv2.rectangle(frame, p1, p2, (255, 0, 0), 3)
                     print('################### GET A Car  #####################')
                     print('BBOX : ', bbox)
@@ -204,3 +206,4 @@ class ComputerVisionAPP:
                 break
         video.release()
         cv2.destroyAllWindows()
+

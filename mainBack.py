@@ -10,7 +10,7 @@ from mathematics import mathlib
 
 
 from comlib import com_socket
-
-if __name__ == '__main__':
-    x = detection_tracking.ComputerVisionAPP()
-    x.run_algorithm(width=1000,timer_limit=10,height=600)
+#
+# if __name__ == '__main__':
+#     x = detection_tracking.ComputerVisionAPP()
+#     x.run_algorithm(width=1000,timer_limit=10,height=600)
