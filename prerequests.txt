@@ -1,0 +1,2 @@
+Put Yolov5 in this directory
+Put test vedio named "video2.mp4" in this directory
