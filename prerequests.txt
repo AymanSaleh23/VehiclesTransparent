@@ -1,2 +1,46 @@
-Put Yolov5 in this directory
-Put test vedio named "video2.mp4" in this directory
+Clone The YOLOV5 Repository from :
+https://github.com/ultralytics/yolov5.git
+
+For installing Python 3.9 and Pip3 follow this article:
+https://singleboardblog.com/headless-raspberry-pi-installation-for-beginners/
+
+Set Python3 as a default run this command:
+curl https://pyenv.run | bash
+
+For installing Opencv-contirb-python follow this article:
+https://singleboardblog.com/install-python-opencv-on-raspberry-pi/
+Note: Only install opencv-python or opencv-contrib-python not both.
+
+Package                Version
+---------------------- -----------
+python3                3.9.4
+pip                    22.3.1
+Cython                 0.29.32
+matplotlib             3.6.2
+tqdm                   4.64.1
+scipy                  1.9.3
+ipython                8.7.0
+ninja                  1.11.1
+yacs                   0.1.8
+ffmpeg                 1.4
+opencv-contrib-python  4.6.0.66
+Pillow                 9.3.0
+scikit-image           0.19.3
+scikit-learn           1.2.0
+lmfit                  1.1.0
+imutils                0.5.4
+PyYAML                 6.0
+jupyterlab             3.0.0
+seaborn                0.12.1
+torch                  1.13.1
+torchaudio             0.13.1
+torchvision            0.14.1
+numpy                  1.23.5
+pandas                 1.5.2
+pytz                   2022.6
+setuptools             65.6.3
+tensorboard            2.4.1
+tensorboard-plugin-wit 1.8.1
+terminado              0.17.1
+tornado                6.2
+wheel                  0.38.4
