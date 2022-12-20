@@ -44,7 +44,8 @@ class Server:
     #       Description:    Method to accept a connection request from any client need to be handled.
     #                       Support exception handling and reconnect if exception occurred as a recursion feature.
     #       Return:         None
-    #  >>>> Issue:          can't update the object attribute {self.to_send} in runtime if socket is running
+    #  >>>> Issue:          Only update String values,
+    #                       can't update the object attribute {self.to_send} in runtime if socket is running
     def send(self):
 
         #   server socket accepts the connection request,
@@ -60,8 +61,11 @@ class Server:
             try:
                 #   A debug print to console informs the connected address which is saved in {self.addr}
                 print(f"> Device with address \"{self.adr}\" connected.")
+
+                """>>>      Critical Section      <<<"""
                 #   Send data which is stored in {self.to_send} to the connected client
                 self.clt.sendall(bytes(self.to_send, "utf-8 "))
+                """>>>      End Critical Section      <<<"""
 
                 #   Simple wait for speed down the execution (optional and will be deleted in future)
                 time.sleep(1)
@@ -73,6 +77,12 @@ class Server:
                 time.sleep(1)
                 #   Retry the connection by call {self.send()} to accept a new connection request from the Client.
                 self.send()
+    def update_to_send(self, new_data):
+
+        """>>>      Critical Section      <<<"""
+        self.to_send = new_data
+        """>>>      End Critical Section      <<<"""
+
 """
     Class:
       NAME:             Client
@@ -117,6 +127,7 @@ class Client:
 
             #   Infinite loop for receiving data continuously.
             while True:
+                """>>>      Critical Section      <<<"""
                 #   Receive data from the socket and store it in object attribute {self.data_recv}.
                 self.data_recv = self.s.recv(1024)
                 #   A debug print to console informs the received data from the connection
@@ -128,6 +139,7 @@ class Client:
                 if len(self.data_recv.decode('utf-8')) == 0:
                     #   Request a new connection from the same server {ip} address and {port} application
                     self.recv(ip, port)
+                """>>>      End Critical Section      <<<"""
         #   If exception occurred
         except Exception:
             #   A debug print to console shows the error
@@ -142,16 +154,18 @@ class Client:
             self.recv(ip, port)
 
 # ###########     Test      ##############
-"""import threading
-s1 = Server("192.168.1.11", 10080)
+from threading import Thread
+#s1 = Server("192.168.1.11", 10080)
 #s1.send()
-t1 = threading.Thread(target=s1.send)
-t1.setDaemon(True)
-t1.start()
+#t1 = Thread(target=s1.send)
+#t1.setDaemon(True)
+#t1.start()
 
-c = Client()
-t2 = threading.Thread(target=c.recv, args=["192.168.1.11", 10080])
+#c = Client()
+#t2 = Thread(target=c.recv, args=["192.168.1.11", 10080])
 #t2 = threading.Thread(target=c.rec, args=["192.168.1.11", 10080])
-t2.setDaemon(True)
-t2.start()
-"""
+#t2.setDaemon(True)
+#t2.start()
+
+#s1.update_to_send("9834732.52")
+#s1.update_to_send([123,2323,353,433,"43532",292.32])
