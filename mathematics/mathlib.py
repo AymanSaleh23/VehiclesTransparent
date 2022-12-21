@@ -14,7 +14,7 @@ from math import sin, cos, sqrt, radians
     
 """
 
-def map_values_ranges(input_value, input_range_min = 90, input_range_max = -90, output_range_min = 2, output_range_max = 12):
+def map_values_ranges(input_value, input_range_min = 180, input_range_max = 0, output_range_min = 2, output_range_max = 12):
     return (input_value - input_range_min) * (output_range_max - output_range_min) / (input_range_max - input_range_min) + output_range_min;
 
 
@@ -51,10 +51,10 @@ def math_model (data = [[2,0],[2,-70],[3,80]], vehicle_lenght=4, direct_distance
 
         # Case 2, 3
         elif (phis[i] < 0  and theta > 0) or (phis[i] > 0  and theta < 0):
-            alphas [i] = 180 - (abs(phis[i]) +abs (theta))
+            alphas [i] = 180 - (abs(phis[i]) +abs(theta))
 
         # Case 5
-        elif phis[i] == 0  and theta == 0:
+        elif phis[i] == 0 and theta == 0:
             alphas[i] = 180
         
         # Case 6, 7
@@ -83,11 +83,11 @@ def frame_to_positions(row_data = [[100,100,960,540],[150,150,640,360],[200,200,
     
     # For each center ( (x+width/2) , (y+height/2) )
     centers = [[(row_data[i][0]+(row_data[i][2]/2)) , (row_data[i][1]+(row_data[i][3]/2))] for i in range (0,3) ]
-    
-    
-    # For get positions in ralation of screen resolution
-    
-    posiotion_angels = [map_values_ranges(input_value = c[0], input_range_min=0,input_range_max=frame_size[0], output_range_min = 90, output_range_max= -90) for c in centers]
-    
+
+    # For get positions in relation of screen resolution
+    print(f"Centers: {centers}")
+    posiotion_angels = [map_values_ranges(input_value = c[0], input_range_min=0,input_range_max=frame_size[0], output_range_min =0, output_range_max= 180) for c in centers]
+    print(f"Angels: {posiotion_angels}")
+
     return posiotion_angels
     
