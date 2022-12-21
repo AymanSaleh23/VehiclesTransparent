@@ -4,8 +4,7 @@ from mathematics import mathlib
 import RPi.GPIO as GPIO
 class Angles:
     def __init__(self, servo_pin):
-        servoPIN = 17
-        GPIO.setmode(GPIO.BCM)
+        GPIO.setmode(GPIO.BOARD)
         GPIO.setup(servo_pin, GPIO.OUT)
         self.servo_pin = servo_pin
         
@@ -14,10 +13,5 @@ class Angles:
         self.pwm_ch.start(2.5) # Initialization
         
     def set_angle(self, angle):
-        try:
-            self.pwm_ch.ChangeDutyCycle(mathlib.map_values_ranges(angle, 0, 180, 2, 12) )
-            time.sleep(0.5)            
-
-        except Exception:
-            self.pwm_ch.stop()
-            
+        self.pwm_ch.ChangeDutyCycle(mathlib.map_values_ranges(angle, 180, 0, 2, 12))
+        time.sleep(0.5)
