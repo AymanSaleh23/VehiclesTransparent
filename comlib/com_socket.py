@@ -77,11 +77,11 @@ class Server:
                 self.clt.sendall(bytes(msg_json, "UTF-8"))
 
                 # receive responses.
-                recv_data = self.s.recv(1024)
+                #recv_data = self.s.recv(1024)
                 # Handle responses.
-                notificationReply = recv_data.decode()
+                #notificationReply = recv_data.decode()
                 # notification reply
-                print(notificationReply)
+                #print(notificationReply)
                 #   Simple wait for speed down the execution (optional and will be deleted in future)
                 time.sleep(1)
             #   If exception occurred

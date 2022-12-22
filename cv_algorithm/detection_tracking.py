@@ -79,7 +79,7 @@ class ObjectTracking:
         fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
         return fps
 
-"""
+
 ########################################################################################################################
 #######################################     Computer Vision APP    #####################################################
 ########################################################################################################################
@@ -190,9 +190,6 @@ class ComputerVisionAPP:
                 print("Data :  x1: ", x1, ' , y1: ', y1, ' , x2: ', x2, ' , y2: ', y2, ' , text_conf: ', text)
                 print("===================")
 
-                self.servo_a.set_angle(self.data[0])
-                self.servo_b.set_angle(self.data[1])
-                self.servo_c.set_angle(self.data[2])
                 row_data = [[0], [0], [0], [0]] * 3
                 # Update data field which is read asynchronously
                 self.data = mathlib.frame_to_positions(
@@ -213,4 +210,3 @@ class ComputerVisionAPP:
                 break
         video.release()
         cv2.destroyAllWindows()
-"""
