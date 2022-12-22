@@ -9,7 +9,7 @@ class Measure:
             GPIO.setmode(GPIO.BOARD)
             GPIO.setwarnings(False)
             
-            # two arguments number of trig and encho in GPIO
+            # two arguments number of trig and echo in GPIO
             self.trig.append(list(trig))
             self.echo.append(list(echo))
             GPIO.setup(trig,GPIO.OUT)
@@ -17,8 +17,7 @@ class Measure:
             Measure.total_unit +=1
         else:
             print("not available to add more than 3 measuring units...!")
-    	
-    	
+
     #return distance between ultrasonic and object   
     def distance_read(self):
     	

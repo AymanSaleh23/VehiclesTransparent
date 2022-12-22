@@ -1,9 +1,5 @@
 
-"""
-Created on Tue Oct 18 18:55:17 2022
-Updated on Tue Dec 2   1:00:00 2022
-"""
-""" Import all Essintial Packages   """
+""" Import all Essential Packages   """
 import subprocess, re, os
 
 """  Create class named scanIP  """
