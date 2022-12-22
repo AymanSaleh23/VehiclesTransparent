@@ -13,41 +13,47 @@ File Descriptoin:
 
 #   essential packages
 import socket, time
+import pickle, struct, imutils, json
 
-"""
-    Class:
-      NAME:             Server
-      DESCRIPTION:      A class to make dealing with Server Sockets easy and object oriented 
-                        Provide a high dynamic code for any future use
-      CLASS ATTRIBUTE:  None
-      DUNDER METHODS:   __init__
-      METHODS:          send
-      MAX NO. Objects:  None      
-"""
 class Server:
-    #   method documentation:
-    #       Name:           __init__
-    #       Parameters:     {self} object reference, {ip} and {port} with no default values.
-    #       Description:    A class constructor to create object of Server and create a stream socket
-    #                       With 5 devices maximum listen and initial value to send stored in {to_send}.
-    #       Return:         None
+    """
+        Class:
+          NAME:             Server
+          DESCRIPTION:      A class to make dealing with Server Sockets easy and object oriented
+                            Provide a high dynamic code for any future use
+          CLASS ATTRIBUTE:  None
+          DUNDER METHODS:   __init__
+          METHODS:          send
+          MAX NO. Objects:  None
+    """
+
     def __init__(self, ip, port):
+        """
+        #   method documentation:
+        #       Name:           __init__
+        #       Parameters:     {self} object reference, {ip} and {port} with no default values.
+        #       Description:    A class constructor to create object of Server and create a stream socket
+        #                       With 5 devices maximum listen and initial value to send stored in {to_send}.
+        #       Return:         None
+        """
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((ip, port))
         self.s.listen(5)
         self.to_send = "initial..."
 
-    #   method documentation:
-    #       Name:           send
-    #       Parameters:     {self} object reference.
-    #       Description:    Method to accept a connection request from any client need to be handled.
-    #                       Support exception handling and reconnect if exception occurred as a recursion feature.
-    #       Return:         None
-    #  >>>> Issue:          Only update String values,
-    #                       can't update the object attribute {self.to_send} in runtime if socket is running
-    def send(self):
 
+    def send(self):
+        """
+        #   method documentation:
+        #       Name:           send
+        #       Parameters:     {self} object reference.
+        #       Description:    Method to accept a connection request from any client need to be handled.
+        #                       Support exception handling and reconnect if exception occurred as a recursion feature.
+        #       Return:         None
+        #  >>>> Issue:          Only update String values,
+        #                       can't update the object attribute {self.to_send} in runtime if socket is running
+        """
         #   server socket accepts the connection request,
         #   saves the returned connection socket and client address in {self.clt}, {self.adr}
         self.clt, self.adr = self.s.accept()
@@ -63,10 +69,19 @@ class Server:
                 print(f"> Device with address \"{self.adr}\" connected.")
 
                 """>>>      Critical Section      <<<"""
-                #   Send data which is stored in {self.to_send} to the connected client
-                self.clt.sendall(bytes(self.to_send, "utf-8 "))
-                """>>>      End Critical Section      <<<"""
+                msg_json = ''
+                msg_json = json.dumps(self.to_send)
 
+                """>>>      End Critical Section      <<<"""
+                #   Send data which is stored in {self.to_send} to the connected client
+                self.clt.sendall(bytes(msg_json, "UTF-8"))
+
+                # receive responses.
+                recv_data = self.s.recv(1024)
+                # Handle responses.
+                notificationReply = recv_data.decode()
+                # notification reply
+                print(notificationReply)
                 #   Simple wait for speed down the execution (optional and will be deleted in future)
                 time.sleep(1)
             #   If exception occurred
@@ -78,29 +93,41 @@ class Server:
                 #   Retry the connection by call {self.send()} to accept a new connection request from the Client.
                 self.send()
     def update_to_send(self, new_data):
-
-        """>>>      Critical Section      <<<"""
+        """
+        #   method documentation:
+        #       Name:           send
+        #       Parameters:     {self} object reference.
+        #       Description:    Method to accept a connection request from any client need to be handled.
+        #                       Support exception handling and reconnect if exception occurred as a recursion feature.
+        #       Return:         None
+        #  >>>> Issue:          Only update String values,
+        #                       can't update the object attribute {self.to_send} in runtime if socket is running
+        """
+        #>>>      Critical Section      <<<
         self.to_send = new_data
-        """>>>      End Critical Section      <<<"""
+        #>>>      End Critical Section      <<<
 
-"""
-    Class:
-      NAME:             Client
-      DESCRIPTION:      A class to make dealing with Client Sockets easy and object oriented 
-                        Provide a high dynamic code for any future use
-      CLASS ATTRIBUTE:  None
-      DUNDER METHODS:   __init__
-      METHODS:          receive
-      MAX NO. Objects:  None      
-"""
 class Client:
-    #   method documentation:
-    #       Name:           __init__
-    #       Parameters:     {self} object reference.
-    #       Description:    A class constructor to create object of Client and create a stream socket to receive data
-    #                       and store it in {data}
-    #       Return:         None
+    """
+        Class:
+          NAME:             Client
+          DESCRIPTION:      A class to make dealing with Client Sockets easy and object oriented
+                            Provide a high dynamic code for any future use
+          CLASS ATTRIBUTE:  None
+          DUNDER METHODS:   __init__
+          METHODS:          receive
+          MAX NO. Objects:  None
+    """
+
     def __init__(self):
+        """
+        #   method documentation:
+        #       Name:           __init__
+        #       Parameters:     {self} object reference.
+        #       Description:    A class constructor to create object of Client and create a stream socket to receive data
+        #                       and store it in {data}
+        #       Return:         None
+        """
         #   Create a socket to be receiver
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #   Boolean variable for check if socket is created
@@ -108,13 +135,16 @@ class Client:
         #   An object attribute to store the received value from the socket connection
         self.data_recv = None
 
-    #   method documentation:
-    #       Name:           recv
-    #       Parameters:     {self} object reference, ip address of the server {ip}, application port {port}.
-    #       Description:    Method to request connection from the server using the {ip}, {port},
-    #                       Support exception handling and reconnect if exception occurred as a recursion feature.
-    #       Return:         None
+
     def recv(self, ip, port):
+        """
+        #   method documentation:
+        #       Name:           recv
+        #       Parameters:     {self} object reference, ip address of the server {ip}, application port {port}.
+        #       Description:    Method to request connection from the server using the {ip}, {port},
+        #                       Support exception handling and reconnect if exception occurred as a recursion feature.
+        #       Return:         None
+        """
         if not self.socket_created:
             #   Create a new socket to be receiver
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -128,15 +158,18 @@ class Client:
             #   Infinite loop for receiving data continuously.
             while True:
                 """>>>      Critical Section      <<<"""
+                #   >>> @Issue Use Jason in data exchanging
                 #   Receive data from the socket and store it in object attribute {self.data_recv}.
-                self.data_recv = self.s.recv(1024)
+                raw_data_recv = self.s.recv(1024)
+                decoded_data = raw_data_recv.decode("UTF-8")
+                self.data_recv = json.loads(decoded_data)
                 #   A debug print to console informs the received data from the connection
-                print("> Received: " + self.data_recv.decode("utf-8"))
+                print("> Received: " + self.data_recv, end=" >> ")
                 #   A debug print to console informs the length of received data and its type
-                print(f"Length :{len(self.data_recv.decode('utf-8'))} , type {type(self.data_recv.decode('utf-8'))}")
-
+                print(f"Length :{len(self.data_recv)} , type {type(self.data_recv)}")
+                self.s.sendall(b"> R:Received Successfully")
                 #   Check if no data received which happen if server crashed.
-                if len(self.data_recv.decode('utf-8')) == 0:
+                if len(self.data_recv) == 0:
                     #   Request a new connection from the same server {ip} address and {port} application
                     self.recv(ip, port)
                 """>>>      End Critical Section      <<<"""
@@ -154,16 +187,16 @@ class Client:
             self.recv(ip, port)
 
 # ###########     Test      ##############
-from threading import Thread
+#from threading import Thread
 #s1 = Server("192.168.1.11", 10080)
 #s1.send()
 #t1 = Thread(target=s1.send)
 #t1.setDaemon(True)
 #t1.start()
-
+#
 #c = Client()
 #t2 = Thread(target=c.recv, args=["192.168.1.11", 10080])
-#t2 = threading.Thread(target=c.rec, args=["192.168.1.11", 10080])
+#t2 = Thread(target=c.rec, args=["192.168.1.11", 10080])
 #t2.setDaemon(True)
 #t2.start()
 
