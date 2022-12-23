@@ -13,7 +13,7 @@ File Descriptoin:
 
 #   essential packages
 import socket, time
-import pickle, struct, imutils, json
+import pickle
 
 class Server:
     """
@@ -69,12 +69,12 @@ class Server:
                 print(f"> Device with address \"{self.adr}\" connected.")
 
                 """>>>      Critical Section      <<<"""
-                msg_json = ''
-                msg_json = json.dumps(self.to_send)
+                msg_pickle = ''
+                msg_pickle = pickle.dumps(self.to_send)
 
                 """>>>      End Critical Section      <<<"""
                 #   Send data which is stored in {self.to_send} to the connected client
-                self.clt.sendall(bytes(msg_json, "UTF-8"))
+                self.clt.sendall(msg_pickle)
 
                 # receive responses.
                 #recv_data = self.s.recv(1024)
@@ -160,11 +160,13 @@ class Client:
                 """>>>      Critical Section      <<<"""
                 #   >>> @Issue Use Jason in data exchanging
                 #   Receive data from the socket and store it in object attribute {self.data_recv}.
-                raw_data_recv = self.s.recv(1024)
-                decoded_data = raw_data_recv.decode("UTF-8")
-                self.data_recv = json.loads(decoded_data)
+                raw_data_recv = b""
+                raw_data_recv += self.s.recv(1024)
+
+                decoded_data = pickle.loads(raw_data_recv)
+                self.data_recv = decoded_data
                 #   A debug print to console informs the received data from the connection
-                print("> Received: " + self.data_recv, end=" >> ")
+                print("> Received: " , self.data_recv, end=" >> ")
                 #   A debug print to console informs the length of received data and its type
                 print(f"Length :{len(self.data_recv)} , type {type(self.data_recv)}")
                 self.s.sendall(b"> R:Received Successfully")
@@ -193,12 +195,11 @@ class Client:
 #t1 = Thread(target=s1.send)
 #t1.setDaemon(True)
 #t1.start()
-#
 #c = Client()
 #t2 = Thread(target=c.recv, args=["192.168.1.11", 10080])
 #t2 = Thread(target=c.rec, args=["192.168.1.11", 10080])
 #t2.setDaemon(True)
 #t2.start()
-
 #s1.update_to_send("9834732.52")
 #s1.update_to_send([123,2323,353,433,"43532",292.32])
+#s1.update_to_send({"add":[123,2323,353,433], "1":["43532",292.32]})
