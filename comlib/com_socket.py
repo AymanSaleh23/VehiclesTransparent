@@ -13,7 +13,7 @@ File Descriptoin:
 
 #   essential packages
 import socket, time
-import pickle, struct, imutils, json
+import pickle
 
 class Server:
     """
@@ -69,19 +69,19 @@ class Server:
                 print(f"> Device with address \"{self.adr}\" connected.")
 
                 """>>>      Critical Section      <<<"""
-                msg_json = ''
-                msg_json = json.dumps(self.to_send)
+                msg_pickle = ''
+                msg_pickle = pickle.dumps(self.to_send)
 
                 """>>>      End Critical Section      <<<"""
                 #   Send data which is stored in {self.to_send} to the connected client
-                self.clt.sendall(bytes(msg_json, "UTF-8"))
+                self.clt.sendall(msg_pickle)
 
                 # receive responses.
-                recv_data = self.s.recv(1024)
+                #recv_data = self.s.recv(1024)
                 # Handle responses.
-                notificationReply = recv_data.decode()
+                #notificationReply = recv_data.decode()
                 # notification reply
-                print(notificationReply)
+                #print(notificationReply)
                 #   Simple wait for speed down the execution (optional and will be deleted in future)
                 time.sleep(1)
             #   If exception occurred
@@ -160,11 +160,13 @@ class Client:
                 """>>>      Critical Section      <<<"""
                 #   >>> @Issue Use Jason in data exchanging
                 #   Receive data from the socket and store it in object attribute {self.data_recv}.
-                raw_data_recv = self.s.recv(1024)
-                decoded_data = raw_data_recv.decode("UTF-8")
-                self.data_recv = json.loads(decoded_data)
+                raw_data_recv = b""
+                raw_data_recv += self.s.recv(1024)
+
+                decoded_data = pickle.loads(raw_data_recv)
+                self.data_recv = decoded_data
                 #   A debug print to console informs the received data from the connection
-                print("> Received: " + self.data_recv, end=" >> ")
+                print("> Received: " , self.data_recv, end=" >> ")
                 #   A debug print to console informs the length of received data and its type
                 print(f"Length :{len(self.data_recv)} , type {type(self.data_recv)}")
                 self.s.sendall(b"> R:Received Successfully")
@@ -186,19 +188,64 @@ class Client:
             #   Request a new connection from the same server {ip} address and {port} application
             self.recv(ip, port)
 
-# ###########     Test      ##############
+############     Test_1  Str/Dict/Int [SOLVED]    ##############
 #from threading import Thread
 #s1 = Server("192.168.1.11", 10080)
 #s1.send()
 #t1 = Thread(target=s1.send)
 #t1.setDaemon(True)
 #t1.start()
-#
 #c = Client()
 #t2 = Thread(target=c.recv, args=["192.168.1.11", 10080])
 #t2 = Thread(target=c.rec, args=["192.168.1.11", 10080])
 #t2.setDaemon(True)
 #t2.start()
-
 #s1.update_to_send("9834732.52")
 #s1.update_to_send([123,2323,353,433,"43532",292.32])
+#s1.update_to_send({"add":[123,2323,353,433], "1":["43532",292.32]})
+
+############     Test2     [SOLVING]  ##############
+#from threading import Thread
+#import cv2, pickle, struct, imutils
+#def sender_app():
+#    s1 = Server("192.168.1.11", 10080)
+#     s1.send()
+#    t1 = Thread(target=s1.send)
+#    t1.setDaemon(True)
+#    t1.start()
+#    vid = cv2.VideoCapture(0)
+#    while (vid.isOpened()):
+#        img, frame = vid.read()
+#        frame = imutils.resize(frame, width=380)
+#        a = pickle.dumps(frame)
+#        message = struct.pack("Q", len(a)) + a
+#        s1.update_to_send(message)
+#        cv2.imshow('TRANSMITTING VIDEO', frame)
+#        key = cv2.waitKey(1) & 0xFF
+
+
+#def receiver_app():
+#    c = Client()
+#    # c.recv("192.168.1.11", 10080)
+#    t2 = Thread(target=c.recv, args=["192.168.1.11", 10080])
+#    t2.setDaemon(True)
+#    t2.start()
+#    data = b""
+#    payload_size = struct.calcsize("Q")
+#    while True:
+#        while len(data) < payload_size:
+#            packet = c.data_recv
+#            if not packet: break
+#            data += packet
+#        packed_msg_size = data[:payload_size]
+#        data = data[payload_size:]
+#        msg_size = struct.unpack("Q", packed_msg_size)[0]
+#        while len(data) < msg_size:
+#            data += c.data_recv
+#        frame_data = data[:msg_size]
+#        data = data[msg_size:]
+#        frame = pickle.loads(frame_data)
+#        cv2.imshow("RECEIVING VIDEO", frame)
+#        key = cv2.waitKey(1) & 0xFF
+
+#app()

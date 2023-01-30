@@ -1,7 +1,7 @@
 import torch
 import cv2
 import sys
-from mathematics import mathlib
+
 ########################################################################################################################
 #######################################     Object Detection    ########################################################
 ########################################################################################################################
@@ -83,38 +83,38 @@ class ObjectTracking:
 ########################################################################################################################
 #######################################     Computer Vision APP    #####################################################
 ########################################################################################################################
-#>>     To be in main Application
+
 class ComputerVisionAPP:
     def __init__(self):
         self.data = None
         self.frame_pure = None
+        self.servo_a = Angles(7)
+        self.servo_b = Angles(11)
+        self.servo_c = Angles(12)
+        
 
     def run_algorithm(self, width=1000, height=700, timer_limit=60):
         # Detection And Tracking Instances
         od = ObjectDetection()
         ot = ObjectTracking()
 
-        # Initialize The x1,y1,x2,y2,text,conf,bbox
-        x1, y1, x2, y2, text, conf, bbox = 0, 0, 0, 0, '', 0, 0
+        x1, y1, x2, y2, text, conf, bbox = 0, 0, 0, 0, '', 0, 0  # Initialize The x1,y1,x2,y2,text,conf,bbox
 
-        # Read video
-        video = cv2.VideoCapture("video2.mp4")
+        video = cv2.VideoCapture("video2.mp4")  # Read video
 
         # Exit if video not opened.
         if not video.isOpened():
             print("Could not open video")
             sys.exit()
 
-        # Flag To Run Detection After 25 Frame
-        periodic_timer = 0
-        # Flag To Run Detection For The First Frame
-        isFirstFrame = True
+        periodic_timer = 0  # Flag To Run Detection After 25 Frame
+
+        isFirstFrame = True  # Flag To Run Detection For The First Frame
 
         while True:
-            # read Frame by frame
-            ok, frame = video.read()
-            # Resize the Frame
-            frame = cv2.resize(frame, (width, height))
+            ok, frame = video.read()  # read Frame by frame
+
+            frame = cv2.resize(frame, (width, height))  # Resize the Frame
 
             # Exit if video not opened.
             if not ok:
@@ -134,6 +134,7 @@ class ComputerVisionAPP:
                     print('############ GET The First Car ##################')
                     print('BBOX : ', bbox)
                     print('#########################################')
+
                 periodic_timer = 0
                 isFirstFrame = False
                 print('*********************** First Frame Detection **************************')
@@ -185,16 +186,18 @@ class ComputerVisionAPP:
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
                 # End Traking
-
                 print("===================")
                 print("Data :  x1: ", x1, ' , y1: ', y1, ' , x2: ', x2, ' , y2: ', y2, ' , text_conf: ', text)
                 print("===================")
 
-                row_data = [[0], [0], [0], [0]] * 3
                 # Update data field which is read asynchronously
-                self.data = mathlib.frame_to_positions(
+                row_data = [[0],[0],[0],[0]]*3
+                self.data = frame_to_positions(
                     row_data=[[bbox[0], bbox[1], bbox[2], bbox[3]], [bbox[0], bbox[1], bbox[2], bbox[3]],
                               [bbox[0], bbox[1], bbox[2], bbox[3]]], frame_size=[width, height])
+                self.servo_a.set_angle(self.data[0])
+                self.servo_b.set_angle(self.data[1])
+                self.servo_c.set_angle(self.data[2])
                 print("===================")
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 255), 2)
             cv2.putText(frame, text, (x1, y1 - 5), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 255), 2)
@@ -210,3 +213,6 @@ class ComputerVisionAPP:
                 break
         video.release()
         cv2.destroyAllWindows()
+
+o = ComputerVisionAPP()
+o.run_algorithm(width=500, height=250,timer_limit=10)
