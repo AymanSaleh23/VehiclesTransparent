@@ -188,7 +188,7 @@ class Client:
             #   Request a new connection from the same server {ip} address and {port} application
             self.recv(ip, port)
 
-# ###########     Test      ##############
+############     Test_1  Str/Dict/Int [SOLVED]    ##############
 #from threading import Thread
 #s1 = Server("192.168.1.11", 10080)
 #s1.send()
@@ -203,3 +203,49 @@ class Client:
 #s1.update_to_send("9834732.52")
 #s1.update_to_send([123,2323,353,433,"43532",292.32])
 #s1.update_to_send({"add":[123,2323,353,433], "1":["43532",292.32]})
+
+############     Test2     [SOLVING]  ##############
+#from threading import Thread
+#import cv2, pickle, struct, imutils
+#def sender_app():
+#    s1 = Server("192.168.1.11", 10080)
+#     s1.send()
+#    t1 = Thread(target=s1.send)
+#    t1.setDaemon(True)
+#    t1.start()
+#    vid = cv2.VideoCapture(0)
+#    while (vid.isOpened()):
+#        img, frame = vid.read()
+#        frame = imutils.resize(frame, width=380)
+#        a = pickle.dumps(frame)
+#        message = struct.pack("Q", len(a)) + a
+#        s1.update_to_send(message)
+#        cv2.imshow('TRANSMITTING VIDEO', frame)
+#        key = cv2.waitKey(1) & 0xFF
+
+
+#def receiver_app():
+#    c = Client()
+#    # c.recv("192.168.1.11", 10080)
+#    t2 = Thread(target=c.recv, args=["192.168.1.11", 10080])
+#    t2.setDaemon(True)
+#    t2.start()
+#    data = b""
+#    payload_size = struct.calcsize("Q")
+#    while True:
+#        while len(data) < payload_size:
+#            packet = c.data_recv
+#            if not packet: break
+#            data += packet
+#        packed_msg_size = data[:payload_size]
+#        data = data[payload_size:]
+#        msg_size = struct.unpack("Q", packed_msg_size)[0]
+#        while len(data) < msg_size:
+#            data += c.data_recv
+#        frame_data = data[:msg_size]
+#        data = data[msg_size:]
+#        frame = pickle.loads(frame_data)
+#        cv2.imshow("RECEIVING VIDEO", frame)
+#        key = cv2.waitKey(1) & 0xFF
+
+#app()
