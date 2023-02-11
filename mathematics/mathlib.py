@@ -15,6 +15,7 @@ def map_values_ranges(input_value, input_range_min=180, input_range_max=0, outpu
     return (input_value - input_range_min) * (output_range_max - output_range_min) / (
                 input_range_max - input_range_min) + output_range_min;
 
+
 def math_model(data=[[2, 0], [2, -70], [3, 80]], vehicle_length=4, direct_distance=4, theta=-50):
     """
         Name        :   math_model
@@ -76,18 +77,18 @@ def math_model(data=[[2, 0], [2, -70], [3, 80]], vehicle_length=4, direct_distan
     a_lengths = [vehicle_length * abs(sin(radians(theta))) / abs(sin(radians(alphas[i]))) for i in range(0, 3)]
 
     # Tested
-    total_lenght_X = [relatives[i] + abs(b_lengths[i]) for i in range(0, 3)]
-    total_lenght_Y = [relatives[i] + abs(a_lengths[i]) for i in range(0, 3)]
+    total_length_x = [relatives[i] + abs(b_lengths[i]) for i in range(0, 3)]
+    total_length_y = [relatives[i] + abs(a_lengths[i]) for i in range(0, 3)]
 
     # Tested
     absolute_distances = [round(sqrt(
-        total_lenght_X[i] ** 2 + total_lenght_Y[i] ** 2 - 2 * total_lenght_X[i] * total_lenght_Y[i] * cos(
+        total_length_x[i] ** 2 + total_length_y[i] ** 2 - 2 * total_length_x[i] * total_length_y[i] * cos(
             radians(alphas[i]))), 4) for i in range(3)]
     return absolute_distances
 
 
 def frame_to_positions(row_data=[[100, 100, 960, 540], [150, 150, 640, 360], [200, 200, 192, 108]],
-                       frame_size=[1920, 1080]):
+                       frame_size=[1920, 1080], mode="FRONT"):
     """
     Name        :   frame_to_positions
     Description :   A method for calculate the angle of the objects in front of the main vehicle.
@@ -96,19 +97,25 @@ def frame_to_positions(row_data=[[100, 100, 960, 540], [150, 150, 640, 360], [20
                 :   -   {frame_size} frame size.
 
 """
-    # row_data is a list of 3 lists
-    # Each list consist of starting_width, starting_height, width, height
+    if mode == "FRONT":
+        # row_data is a list of 3 lists
+        # Each list consist of starting_width, starting_height, width, height
+        # Frame_size represents the resolution of camera which is used to capture the frame
+        # For each center ( (x+width/2) , (y+height/2) )
+        centers = [[(row_data[i][0] + (row_data[i][2] / 2)), (row_data[i][1] + (row_data[i][3] / 2))]
+                   for i in range(0, 3)]
+        # For get positions in relation of screen resolution
+        print(f"Centers: {centers}")
 
-    # Frame_size represents the resolution of camera which is used to capture the frame
+    elif mode == "BACK":
+        # For each center ( (x+width/2) , (y+height/2) )
+        center = [[(row_data[0] + (row_data[2] / 2)), (row_data[1] + (row_data[3] / 2))]]
+        # For get positions in relation of screen resolution
+        print(f"Center: {center}")
 
-    # For each center ( (x+width/2) , (y+height/2) )
-    centers = [[(row_data[i][0] + (row_data[i][2] / 2)), (row_data[i][1] + (row_data[i][3] / 2))] for i in range(0, 3)]
-
-    # For get positions in relation of screen resolution
-    print(f"Centers: {centers}")
     position_angels = [
         map_values_ranges(input_value=c[0], input_range_min=0, input_range_max=frame_size[0], output_range_min=0,
-                          output_range_max=180) for c in centers]
-    print(f"Angels: {position_angels}")
+                          output_range_max=180) for c in center]
 
+    print(f"Angels: {position_angels}")
     return position_angels
