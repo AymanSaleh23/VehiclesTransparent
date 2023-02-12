@@ -235,18 +235,20 @@ class ComputerVisionAPP:
                     self.tracking_area = roi_frame[ bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])]
                     print('########################################## tracking_area SHAPE : ', self.tracking_area.shape)
                     # Resize the streamedData
-                    if self.tracking_area.shape[1] != 0 or self.tracking_area.shape[0] != 0:
+                    if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
+                        streamedData = None
+
+                        
+                    else:
                         self.streamed_data = cv2.resize(self.streamed_data,
                                                         (self.tracking_area.shape[1], self.tracking_area.shape[0]))
-                    else:
-                        self.streamed_data = cv2.resize(self.streamed_data, (1, 1))
+                        roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
+                            self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
+                            else None
                     print('########################################### streamed Data SHAPE : ',
                           self.streamed_data.shape)
-                    # The next instruction will put the streamed frame on the tracked car frame.
                     # In Future plans we cane use image blending or image superimposing concepts.
-                    roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
-                        self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
-                        else None
+                    
 
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
@@ -260,7 +262,7 @@ class ComputerVisionAPP:
             cv2.putText(frame, "FPS : " + str(int(fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
             cv2.imshow('Dashboard', frame)
             # Resize the Streamed Video just To preview it as a result Data
-            received_frame = cv2.resize(received_frame, (500, 350))
+            # received_frame = cv2.resize(received_frame, (500, 350))
             #cv2.imshow('Streamed Data', received_frame)
             #cv2.imshow("Tracking_area", self.tracking_area)
             # cv2.waitKey(0)
