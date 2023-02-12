@@ -40,7 +40,7 @@ class SingleCardDetection:
         if not self.df.empty:
             # to get Just only one car. If you want to get all cars, just loop on index in df.index.
             self.first_car_index = self.df.index[0]
-            
+
             if self.df['confidence'][self.first_car_index] >= self.threshold:
                 self.x1, self.y1 = int(self.df['xmin'][self.first_car_index]),\
                     int(self.df['ymin'][self.first_car_index])
@@ -49,7 +49,7 @@ class SingleCardDetection:
                 self.label = self.df['name'][self.first_car_index]
                 self.conf  = self.df['confidence'][self.first_car_index]
                 self.text = self.label + ' , ' + str(self.conf.round(decimals=2))
-                
+
         return self.x1, self.y1, self.x2, self.y2, self.text, self.conf
 
 
@@ -82,7 +82,7 @@ class ObjectTracking:
         # Initialize tracker with first frame and bounding box
         ok = self.tracker.init(frame, bbox)
         return ok
-    
+
     def update_track(self, frame):
         # Update tracker
         ok, bbox = self.tracker.update(frame)
@@ -235,19 +235,18 @@ class ComputerVisionAPP:
                     self.tracking_area = roi_frame[ bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])]
                     print('########################################## tracking_area SHAPE : ', self.tracking_area.shape)
                     # Resize the streamedData
-                    if self.tracking_area.shape[1] != 0 or self.tracking_area.shape[0] != 0:
+                    if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
+                        self.streamed_data = None
+                    else:
                         self.streamed_data = cv2.resize(self.streamed_data,
                                                         (self.tracking_area.shape[1], self.tracking_area.shape[0]))
-                    else:
-                        self.streamed_data = cv2.resize(self.streamed_data, (1, 1))
-                    print('########################################### streamed Data SHAPE : ',
-                          self.streamed_data.shape)
-                    # The next instruction will put the streamed frame on the tracked car frame.
-                    # In Future plans we cane use image blending or image superimposing concepts.
-                    roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
-                        self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
-                        else None
-
+                        print('########################################### streamed Data SHAPE : ',
+                              self.streamed_data.shape)
+                        # The next instruction will put the streamed frame on the tracked car frame.
+                        # In Future plans we cane use image blending or image superimposing concepts.
+                        roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
+                            self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
+                            else None
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
             # End Tracking
@@ -259,8 +258,6 @@ class ComputerVisionAPP:
             # Display FPS on frame
             cv2.putText(frame, "FPS : " + str(int(fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
             cv2.imshow('Dashboard', frame)
-            # Resize the Streamed Video just To preview it as a result Data
-            received_frame = cv2.resize(received_frame, (500, 350))
             #cv2.imshow('Streamed Data', received_frame)
             #cv2.imshow("Tracking_area", self.tracking_area)
             # cv2.waitKey(0)
@@ -273,3 +270,5 @@ class ComputerVisionAPP:
 
     def run_front(self):
         pass
+cv_app = ComputerVisionAPP()
+cv_app.run_back(timer_limit=100)
