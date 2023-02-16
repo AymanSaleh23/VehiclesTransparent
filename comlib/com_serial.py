@@ -13,7 +13,7 @@ class SerialComm:
         try:
             self.ser = serial.Serial(self.port, self.baudrate, timeout=self.timeout, parity=self.parity,
                                      stopbits=self.stopbits, bytesize=self.bytesize)
-            
+            self.ser.flush()
             if not self.ser.isOpen():
                 self.ser.open()
             else:
@@ -24,21 +24,21 @@ class SerialComm:
                 self.connection_state = True
                 self.received_data = None
                 print("Serial Initialized")
+                time.sleep(4)
         except Exception:
             print("Failed Initialization Serial")
 
     def get_value(self):
-        print("0")
         if self.connection_state:
-            print("1")
             try:
-                print("2")
-                self.ser.flushOutput()
                 self.ser.write(self.serial_command.encode(encoding='utf-8'))
-                print("3")
-                self.received_data = self.ser.readline().decode('utf-8')
-                print("Debug Receive: ", self.received_data)
-                return self.received_data
+                print(f"Command: {self.serial_command}") 
+                time.sleep(1)
+                if self.ser.in_waiting > 0:
+                    self.received_data = self.ser.readline().decode('utf-8')
+                    print("Debug Receive: ", self.received_data)
+                    
+                    return self.received_data
                 
             except Exception:
                 print("4")
