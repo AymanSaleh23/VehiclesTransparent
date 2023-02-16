@@ -5,15 +5,24 @@ import time
 class Measure:
     
     total_unit = 0
-
+    TIME_OUT = 3
+    __TIME_FAKE = 0
+    __TIME_TRUE = 1
+    
     def __init__(self, trig, echo):
         if Measure.total_unit < 3:
-            GPIO.setmode(GPIO.BOARD)
+            GPIO.setmode(GPIO.BCM)
             GPIO.setwarnings(False)
             
             # two arguments number of trig and echo in GPIO
-            self.trig.append(list(trig))
-            self.echo.append(list(echo))
+            self.trig = trig
+            self.echo = echo
+            self.pulse_start = 0
+            self.pulse_end = 0
+            self.pulse_duration = 0
+            self.duration = 0
+            self.distance = 0
+            self.time_status = None
             GPIO.setup(trig,GPIO.OUT)
             GPIO.setup(echo,GPIO.IN)
             Measure.total_unit +=1
@@ -23,32 +32,30 @@ class Measure:
     # Return distance between ultrasonic and object
     def distance_read(self):
         GPIO.output(self.trig,False)
-        time.sleep(1)
+        time.sleep(0.001)
         GPIO.output(self.trig,True)
         time.sleep(0.000002)
         GPIO.output(self.trig,False)
 
-        while GPIO.input(self.echo) == 0:
-            pulse_start = time.time()
+        self.time_status = Measure.__TIME_FAKE
+        init_t_1 = time.time()
+        
+        while GPIO.input(self.echo) == 0 and self.pulse_start - init_t_1 < Measure.TIME_OUT:
+            self.pulse_start = time.time()
+        
+        init_t_2 = time.time()
+        while GPIO.input(self.echo) == 1 and self.pulse_end  - init_t_2 < Measure.TIME_OUT:
+            self.pulse_end = time.time()
     
-        while GPIO.input(self.echo) == 1:
-            pulse_end = time.time()
-    
-        pulse_duration = pulse_end - pulse_start
-        distance = (pulse_duration * 35124)/2
-        distance = round(distance, 2)
-        return distance
-
-"""
-#########   Test     ##########
-u1 = Measure(12, 19)
-u2 = Measure(13, 20)
-u3 = Measure(14, 21)
-
-for i in range(50):
-
-    u1.distance_read()
-    u2.distance_read()
-    u3.distance_read()
-"""
+        if self.pulse_start - init_t_1 > Measure.TIME_OUT or self.pulse_end  - init_t_2 > Measure.TIME_OUT:
+            self.time_status = Measure.__TIME_FAKE
+            self.distance = None
+            
+        else :
+            self.time_status = Measure.__TIME_TRUE
+            self.pulse_duration = self.pulse_end - self.pulse_start
+            self.distance = (self.pulse_duration * 34000)/2
+            self.distance = round(self.distance, 2)
+            self.distance = [self.distance if self.time_status == Measure.__TIME_TRUE else Measure.__TIME_FAKE in [0]].pop()
+        return self.distance
 
