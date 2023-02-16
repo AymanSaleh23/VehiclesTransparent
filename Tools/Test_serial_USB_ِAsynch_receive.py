@@ -1,11 +1,8 @@
-"""     Test Serial App """
-sc = SerialComm(port='COM5', baudrate=115200, timeout=1)
+if __name__ == '__main__':
+    ss = SerialComm(port='/dev/ttyACM0', baudrate=115200)
 
-while True:
-    sc.serial_command = "1"
-    print(">>>From App:", sc.get_value())
-    sc.serial_command = "2"
-    print(">>>From App:", sc.get_value())
-    time.sleep(0.5)
-    print("Any Other app!!!")
-    time.sleep(2)
+    while True:
+        ss.serial_command = '1'
+        print(f">>>APP: {ss.get_value()}")
+        ss.serial_command = '2'
+        print(f">>>APP: {ss.get_value()}")
