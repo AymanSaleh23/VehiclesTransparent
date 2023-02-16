@@ -11,7 +11,12 @@ class MultiCarsdetection:
         self.model = torch.hub.load('yolov5', 'yolov5n', source= 'local')   # You can select the size of your model as shown in the previous image.
         self.model.classes = [2,5,7]  # To detect specific categories, 2: car,5: bus,7: truck ,for more categories 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml' 
         self.threshold = 0.65  #reject any predictions with less than 60% confidence 
-        
+    
+    def calc_area(self,xmin,ymin,xmax,ymax):
+        width = round(abs(xmax-xmin))
+        height= round(abs(ymax-ymin))
+        return width*height
+    
     def detect(self, frame,width):
         self.result = self.model(frame)
         self.df = self.result.pandas().xyxy[0]
@@ -38,32 +43,46 @@ class MultiCarsdetection:
             self.df['left'] = np.where(self.df['section']== '0', 1, 0)
             self.df['middle'] = np.where(self.df['section']== '1', 1, 0)
             self.df['right'] = np.where(self.df['section']== '2', 1, 0)
-            
+            # add Area Coulmn to data frame to get the highest car area 
+            self.df['area'] = self.df.apply(lambda x: self.calc_area(x['xmin'],x['ymin'],x['xmax'],x['ymax']), axis=1)
             # set the therashould values
             self.df = self.df[self.df['confidence'] > self.threshold] 
             
             # looping over detected cars on the dataFrame and pass the detected cars cordinates to 
             # draw_bbox function
             result = [draw_bbox(frame=frame, x1=row[0], y1=row[1], x2=row[2], y2=row[3], section=row[4]) for row in self.df[['xmin', 'ymin','xmax','ymax','section']].to_numpy().astype(int)]
-        print('======================================================================================')
-        print('===================================== Cars Detection =================================')
-        print('======================================================================================')
-        print(self.df)
-        print('--------------------------------------------------------------------------------------')
-        left_section = get_sec_data(section= 'left',data_frame=self.df)
-        print('Left Section')
-        print("{}".format( left_section))
-        print('----------------------------------------------------------------------------------')
-        middle_section = get_sec_data(section= 'middle',data_frame=self.df)
-        print('Middle Section')
-        print("{}".format( middle_section))
-        print('-----------------------------------------------------------------------------------')
-        right_section = get_sec_data(section= 'right',data_frame=self.df)
-        print('Right Section')
-        print("{}".format( right_section))
+            print('======================================================================================')
+            print('===================================== Cars Detection =================================')
+            print('======================================================================================')
+            print(self.df)
+            print('--------------------------------------------------------------------------------------')
+            left_section = self.df[self.df['left'] == 1].drop(['section', 'left',  'middle' , 'right','class','name'], axis=1)
+            print('Left Section')
+            print("{}".format( left_section))
+            if (not left_section.empty):
+                highest_left_car_area = self.df.iloc[[left_section['area'].idxmax()]].drop(['section', 'left',  'middle' , 'right','class','name'], axis=1)
+                print('highest_left_car_area')
+                print("{}".format( highest_left_car_area))
+            print('----------------------------------------------------------------------------------')
+    #         middle_section = get_sec_data(section= 'middle',data_frame=self.df)
+            middle_section = self.df[self.df['middle'] == 1].drop(['section', 'left',  'middle' , 'right','class','name'], axis=1)
+            print('Middle Section')
+            print("{}".format( middle_section))
+            if (not middle_section.empty):
+                highest_middle_car_area = self.df.iloc[[middle_section['area'].idxmax()]].drop(['section', 'left',  'middle' , 'right','class','name'], axis=1)
+                print('highest_middle_car_area')
+                print("{}".format( highest_middle_car_area))
+            print('-----------------------------------------------------------------------------------')
+            right_section = self.df[self.df['right'] == 1].drop(['section', 'left',  'middle' , 'right','class','name'], axis=1)
+            print('Right Section')
+            print("{}".format( right_section))
+            if (not right_section.empty):
+                highest_right_car_area = self.df.iloc[[right_section['area'].idxmax()]].drop(['section', 'left',  'middle' , 'right','class','name'], axis=1)
+                print('highest_right_car_area')
+                print("{}".format( highest_right_car_area))
         return self.df # return the meta data for all detected cars
 
-
+    
 
 def draw_bbox(frame,x1, y1, x2, y2,section):
     if section == 0:
@@ -76,15 +95,6 @@ def draw_bbox(frame,x1, y1, x2, y2,section):
     
 def get_section_center(start_section_width,end_section_width):
     return round((abs(end_section_width - start_section_width))/2)+start_section_width
-
-
-def get_sec_data(section,data_frame):
-    if not data_frame.empty:
-        return data_frame[data_frame[section] == 1].drop(['section', 'left',  'middle' , 'right'], axis=1)
-    else :
-        print('No Cars')
-
-
 
 def run():
     # Some Initial  Parameters
@@ -124,8 +134,8 @@ def run():
         # Showing The Video Frame
         cv2.imshow('test_Image',frame)
 
-
-       
+#         cv2.waitKey(0)
+           
         if cv2.waitKey(1) & 0xFF == ord('q'): # if press q 
             break
 
