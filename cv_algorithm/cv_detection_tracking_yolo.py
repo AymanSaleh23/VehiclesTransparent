@@ -90,7 +90,7 @@ class ObjectTracking:
         return ok, bbox
 
 
-class ComputerVisionAPP:
+class ComputerVisionBackApp:
     def __init__(self, width=1000, height=700):
         # Some Initial  Parameters
         self.tracking_area = DEF_VAL
@@ -270,5 +270,3 @@ class ComputerVisionAPP:
 
     def run_front(self):
         pass
-cv_app = ComputerVisionAPP()
-cv_app.run_back(timer_limit=100)
