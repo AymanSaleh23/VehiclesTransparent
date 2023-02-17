@@ -1,15 +1,3 @@
-"""
-####################################################
-##############     DEC, 20th 2022     ##############
-##############      v. 1.1.0          ##############
-####################################################
-
-File Descriptoin:
-    - Second version of socket File in communication module
-    - Issues:
-        - A bug with disconnecting Server while client is connected.
-        - A bug with changing the server socket value to send in background with threads.
-"""
 
 #   essential packages
 import socket, time
@@ -144,6 +132,7 @@ class Client:
 
         try:
             self.s.connect((self.ip, self.port))
+            self.is_connected = True
         except Exception:
             print("> Connection Issue !")
             time.sleep(0.2)
@@ -154,35 +143,51 @@ class Client:
     def recv(self, size):
         if not self.socket_created:
             self.__init__(self.ip, self.port)
-            if self.is_connected == False:
-                try:
-                    self.s.connect((self.ip, self.port))
-                except Exception:
-                    print("> Connection Issue !")
-                    time.sleep(0.2)
-                    self.s.close()
-                    self.socket_created = False
-                    self.__init__(self.ip, self.port)
-        return self.s.recv(size)
+
+        if self.is_connected == False:
+            try:
+                self.s.connect((self.ip, self.port))
+                self.is_connected = True
+            except Exception:
+                print("> Connection Issue !")
+                time.sleep(0.2)
+                self.s.close()
+                self.is_connected = False
+                self.__init__(self.ip, self.port)
+        if self.is_connected == True:
+            return self.s.recv(size)
     def receive_frame(self, size):
 
         """ Will be received from Socket"""
-
-        while len(self.data) < self.payload_size:
-            packet = self.recv(1024)
-            if not packet: break
-            self.data += packet
-        packed_msg_size = self.data[:self.payload_size]
-        self.data = self.data[self.payload_size:]
-        msg_size = struct.unpack("Q", packed_msg_size)[0]
-        while len(self.data) < msg_size:
-            self.data += self.recv(1024)
-        frame_data = self.data[:msg_size]
-        self.data = self.data[msg_size:]
-        frame = pickle.loads(frame_data)
-        #cv2.imshow("RECEIVING VIDEO", frame)
-        key = cv2.waitKey(1) & 0xFF
-        return frame
+        try:
+            if self.is_connected == True and self.socket_created == True:
+                while len(self.data) < self.payload_size:
+                    packet = self.recv(1024)
+                    if not packet:
+                        break
+                    self.data += packet
+                packed_msg_size = self.data[:self.payload_size]
+                self.data = self.data[self.payload_size:]
+                msg_size = struct.unpack("Q", packed_msg_size)[0]
+                while len(self.data) < msg_size:
+                    self.data += self.recv(1024)
+                frame_data = self.data[:msg_size]
+                self.data = self.data[msg_size:]
+                frame = pickle.loads(frame_data)
+                cv2.imshow("RECEIVING VIDEO", frame)
+                key = cv2.waitKey(1) & 0xFF
+                return frame
+        except Exception:
+            self.is_connected = False
+            #   A debug print to console shows the error
+            print("> Connection Issue !")
+            #   A small wait for a new connection request
+            time.sleep(0.2)
+            #   Close the failed connection
+            self.s.close()
+            #   Update the status of the boolean variable indicates the socket is closed
+            self.socket_created = False
+            self.__init__(self.ip, self.port)
 
     def recv_discrete(self):
         """
@@ -204,7 +209,23 @@ class Client:
         if self.is_connected == False:
             try:
                 self.s.connect((self.ip, self.port))
+                self.is_connected = True
+                #   If exception occurred
+            except Exception:
+                #   A debug print to console shows the error
+                print("> Connection Issue !")
+                #   A small wait for a new connection request
+                time.sleep(0.2)
+                #   Close the failed connection
+                self.s.close()
+                #   Update the status of the boolean variable indicates the socket is closed
+                self.socket_created = False
+                self.is_connected = False
+                #   Request a new connection from the same server {ip} address and {port} application
+                self.recv(1024)
                 #   Infinite loop for receiving data continuously.
+        if self.is_connected == True:
+            try:
                 while True:
                     """>>>      Critical Section      <<<"""
                     #   >>> @Issue Use Jason in data exchanging
@@ -224,9 +245,9 @@ class Client:
                         #   Request a new connection from the same server {ip} address and {port} application
                         self.recv(1024)
                     """>>>      End Critical Section      <<<"""
-
-            #   If exception occurred
+                    return self.data_recv
             except Exception:
+                self.is_connected = False
                 #   A debug print to console shows the error
                 print("> Connection Issue !")
                 #   A small wait for a new connection request
