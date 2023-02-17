@@ -23,9 +23,12 @@ class SerialComm:
                 self.ser.reset_input_buffer()
                 self.connection_state = True
                 self.received_data = None
-                print("Serial Initialized")
-                time.sleep(4)
+                print(f"Serial Initialized: {self.__str__()}")
+                time.sleep(3)
+                return
         except Exception:
+            self.ser = None
+            self.connection_state = False
             print("Failed Initialization Serial")
 
     def get_value(self):
@@ -33,7 +36,7 @@ class SerialComm:
             try:
                 self.ser.write(self.serial_command.encode(encoding='utf-8'))
                 print(f"Command: {self.serial_command}") 
-                time.sleep(1)
+                time.sleep(2)
                 if self.ser.in_waiting > 0:
                     self.received_data = self.ser.readline().decode('utf-8')
                     print("Debug Receive: ", self.received_data)
@@ -41,12 +44,18 @@ class SerialComm:
                     return self.received_data
                 
             except Exception:
-                print("4")
+                print("Communication Breaked & Reading")
                 print("Serial Closed")
                 self.connection_state = False
+                self.ser = None
 
         else:
-            print("5")
+            print("Communication Status is False")
+            self.ser = None
             self.__init__(port=self.port, parity=self.parity, stopbits=self.stopbits, bytesize=self.bytesize,
-                          baudrate=self.baudrate, timeout=self.timeout)
-            print("Restart Serial")
+                          baudrate=self.baudrate, timeout=self.timeout)            
+            self.connection_state = True
+            print(f"Restarting Serial: {self.__str__()}")
+    
+    def __str__ (self):
+        return f"PORT:{self.port}, Baudrate:{self.baudrate}, TimeOut:{self.timeout}"
