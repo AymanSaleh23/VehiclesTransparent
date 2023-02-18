@@ -23,19 +23,19 @@ class Measure:
             self.duration = 0
             self.distance = 0
             self.time_status = None
-            GPIO.setup(trig,GPIO.OUT)
-            GPIO.setup(echo,GPIO.IN)
-            Measure.total_unit +=1
+            GPIO.setup(trig, GPIO.OUT)
+            GPIO.setup(echo, GPIO.IN)
+            Measure.total_unit += 1
         else:
             print("not available to add more than 3 measuring units...!")
 
     # Return distance between ultrasonic and object
     def distance_read(self):
-        GPIO.output(self.trig,False)
+        GPIO.output(self.trig, False)
         time.sleep(0.001)
-        GPIO.output(self.trig,True)
+        GPIO.output(self.trig, True)
         time.sleep(0.000002)
-        GPIO.output(self.trig,False)
+        GPIO.output(self.trig, False)
 
         self.time_status = Measure.__TIME_FAKE
         init_t_1 = time.time()
@@ -44,14 +44,14 @@ class Measure:
             self.pulse_start = time.time()
         
         init_t_2 = time.time()
-        while GPIO.input(self.echo) == 1 and self.pulse_end  - init_t_2 < Measure.TIME_OUT:
+        while GPIO.input(self.echo) == 1 and self.pulse_end - init_t_2 < Measure.TIME_OUT:
             self.pulse_end = time.time()
     
-        if self.pulse_start - init_t_1 > Measure.TIME_OUT or self.pulse_end  - init_t_2 > Measure.TIME_OUT:
+        if self.pulse_start - init_t_1 > Measure.TIME_OUT or self.pulse_end - init_t_2 > Measure.TIME_OUT:
             self.time_status = Measure.__TIME_FAKE
             self.distance = None
             
-        else :
+        else:
             self.time_status = Measure.__TIME_TRUE
             self.pulse_duration = self.pulse_end - self.pulse_start
             self.distance = (self.pulse_duration * 34000)/2
