@@ -3,6 +3,8 @@ import sys
 import cv2
 import torch
 
+from front_app.cv_global_variables import CVGlobalVariables
+
 
 class MultiCarsDetection:
     def __init__(self, width, height):
@@ -134,6 +136,7 @@ class ComputerVisionFrontal:
         # Exit if video not opened.
         if not self.video.isOpened():
             print("Could not open video")
+            CVGlobalVariables.detected_cars_centers_list = []
             sys.exit()
 
         while True:
@@ -144,14 +147,15 @@ class ComputerVisionFrontal:
             # Exit if video not opened.
             if not ok:
                 print('Cannot read video file')
+                CVGlobalVariables.detected_cars_centers_list = []
                 sys.exit()
-                break
 
             cars_sections = self.od.detect(frame=frame)
+            CVGlobalVariables.detected_cars_centers_list = cars_sections
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             print('Detected Left Car center  : ')
             print(cars_sections[0])
-            print('Detected Middel Car center : ')
+            print('Detected Middle Car center : ')
             print(cars_sections[1])
             print('Detected Right Car center : ')
             print(cars_sections[2])
@@ -174,11 +178,8 @@ class ComputerVisionFrontal:
             #         cv2.waitKey(0)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # if press q
+                CVGlobalVariables.detected_cars_centers_list = []
                 break
 
         self.video.release()
         cv2.destroyAllWindows()
-
-
-test = ComputerVisionFrontal()
-test.run_front()
