@@ -1,20 +1,30 @@
 import threading
 import time
-
+from comlib.com_socket import *
 from cv_algorithm.multi_cars_detection import ComputerVisionFrontal
+from front_app.cv_global_variables import CVFrontGlobalVariables
 
-# First Thread to run run_front in  ComputerVisionFrontal which contains while loop
-from front_app.cv_global_variables import CVGlobalVariables
+if __name__ == "__main__":
+    # instance for run ComputerVisionFrontal class
+    computer_vision_frontal_instance = ComputerVisionFrontal()
+    in_cv2measure_sock_angle = Server(port=10051, ip='127.0.0.1')
+    in_cv2comm_sock_frame = Server(port=10053, ip='127.0.0.1')
 
-computer_vision_frontal_instance = ComputerVisionFrontal()  # instance for run ComputerVisionFrontal class
-run_front = computer_vision_frontal_instance.run_front  # reference for run_front function without calling it
+    thrd_asynch_send_angle = threading.Thread(target=in_cv2measure_sock_angle.send, args=[])
+    thrd_asynch_send_angle.setDaemon(True)
 
-t1 = threading.Thread(target=run_front, args=[])
-t1.start()
+    thrd_asynch_send_frame = threading.Thread(target=in_cv2comm_sock_frame.send, args=[])
+    thrd_asynch_send_frame.setDaemon(True)
 
-counter = 0
-while True:
-    counter = counter + 1
-    result = CVGlobalVariables.detected_cars_centers_list
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Any Other app!!! : ", counter, result, '\n')
-    time.sleep(0.5)
+    thrd_asynch_run_front = threading.Thread(target=computer_vision_frontal_instance.run_front, args=[])
+    thrd_asynch_run_front.setDaemon(True)
+
+    thrd_asynch_send_angle.start()
+    thrd_asynch_run_front.start()
+    thrd_asynch_send_frame.start()
+
+    while True:
+        in_cv2measure_sock_angle.update_to_send(CVFrontGlobalVariables.detected_cars_centers_list)
+        in_cv2comm_sock_frame.update_to_send(CVFrontGlobalVariables.frame)
+
+        time.sleep(2)

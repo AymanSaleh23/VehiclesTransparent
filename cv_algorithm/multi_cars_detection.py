@@ -3,7 +3,8 @@ import sys
 import cv2
 import torch
 
-from front_app.cv_global_variables import CVGlobalVariables
+from front_app.cv_global_variables import CVFrontGlobalVariables
+from mathematics.mathlib import map_values_ranges
 
 
 class MultiCarsDetection:
@@ -56,7 +57,7 @@ class MultiCarsDetection:
             print(self.df)
             # print('--------------------------------------------------------------------------------------')
             highest_left_car_area = self.df[self.df['xmax'] <= self.end_left_section]
-            if (not highest_left_car_area.empty):
+            if not highest_left_car_area.empty:
                 highest_left_car_area = self.df.iloc[highest_left_car_area['area'].idxmax()]
                 #                 print('highest_left_car_area')
                 #                 print("{}".format( highest_left_car_area))
@@ -72,7 +73,7 @@ class MultiCarsDetection:
 
             else:
                 highest_left_car_area = 0
-                highest_left_car_area_center = 0
+                highest_left_car_area_center = (-1, 0)
             #             print('--------------------------------------------------------------------------------------')
             highest_middle_car_area = self.df[
                 (self.df['xmax'] > self.end_left_section) & (self.df['xmax'] <= self.end_middle_section)]
@@ -92,7 +93,7 @@ class MultiCarsDetection:
 
             else:
                 highest_middle_car_area = 0
-                highest_middle_car_area_center = 0
+                highest_middle_car_area_center = (-1, 0)
             #             print('--------------------------------------------------------------------------------------')
             highest_right_car_area = self.df[
                 (self.df['xmax'] > self.end_middle_section) & (self.df['xmax'] <= self.end_right_section)]
@@ -111,13 +112,13 @@ class MultiCarsDetection:
                 cv2.circle(frame, highest_right_car_area_center, radius=1, color=(255, 0, 0), thickness=2)
             else:
                 highest_right_car_area = 0
-                highest_right_car_area_center = 0
+                highest_right_car_area_center = (-1, 0)
 
             cars_sections = [highest_left_car_area_center, highest_middle_car_area_center,
-                             highest_middle_car_area_center]
-            return cars_sections  # return list of highest car area for each section, 0 left, 1 middel, 2 right
+                             highest_right_car_area_center]
+            return cars_sections  # return list of the highest car area for each section, 0 left, 1 middle, 2 right
         else:
-            return [0, 0, 0]
+            return [(-1, 0), (-1, 0), (-1, 0)]
 
 
 class ComputerVisionFrontal:
@@ -136,22 +137,31 @@ class ComputerVisionFrontal:
         # Exit if video not opened.
         if not self.video.isOpened():
             print("Could not open video")
-            CVGlobalVariables.detected_cars_centers_list = []
+            CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
             sys.exit()
 
         while True:
             # Read Frame by frame
             ok, frame = self.video.read()
+            CVFrontGlobalVariables.frame = frame
             frame = cv2.resize(frame, (self.width, self.height))  # Resize the Frame
 
             # Exit if video not opened.
             if not ok:
                 print('Cannot read video file')
-                CVGlobalVariables.detected_cars_centers_list = []
+                CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
                 sys.exit()
 
             cars_sections = self.od.detect(frame=frame)
-            CVGlobalVariables.detected_cars_centers_list = cars_sections
+            # [ (451, 651) , (0,0) , (451, 651) ]
+            position_angels = [
+                map_values_ranges(input_value=c[0], input_range_min=0, input_range_max=self.width,
+                                  output_range_min=0,
+                                  output_range_max=180) for c in cars_sections]
+            print('position_angels : ', position_angels)
+            print('cars_sections : ',cars_sections)
+            CVFrontGlobalVariables.detected_cars_centers_list = position_angels
+
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             print('Detected Left Car center  : ')
             print(cars_sections[0])
@@ -178,7 +188,7 @@ class ComputerVisionFrontal:
             #         cv2.waitKey(0)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # if press q
-                CVGlobalVariables.detected_cars_centers_list = []
+                CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
                 break
 
         self.video.release()
