@@ -3,7 +3,7 @@
 #from distances.dist_angle import *
 
 # uncomment this to test on PC
-#from Tools.Test_Measure_app_Front import *
+from Tools.Test_Measure_app_Front import *
 
 from comlib.com_socket import *
 from threading import Thread
@@ -23,7 +23,7 @@ if __name__ == "__main__":
         try:
             cv_angle_list = in_cv2measure_sock_angle.recv_discrete()
         except Exception:
-            cv_angle_list = [45, 90, -45]
+            cv_angle_list = [45, 90, 135]
         # Check if the last received values is different
         for section in range(0, len(servo_obj_list)):
             servo_obj_list[section].set_angle(cv_angle_list[section])
