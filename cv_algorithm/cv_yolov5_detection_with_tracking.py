@@ -1,14 +1,18 @@
-import torch, cv2, sys
-from comlib import com_socket
+import cv2
+import sys
+import torch
+
 import mathematics.mathlib
+from comlib import com_socket
 
 DEF_VAL = 0
 DEF_FLOAT = 0.0
 DEF_TXT = ''
-CONFIDENCE_THRESHOLD = 0.6
+CONFIDENCE_THRESHOLD = 0.65
 RECEIVED_FRAME_PORT = 10080
 FRAME_SOURCE_IP = '192.168.1.11'
 CURRENT_MACHINE_FRAME_SOURCE = "video2.mp4"
+
 
 # Object Detection Class
 
@@ -18,39 +22,48 @@ class SingleCardDetection:
     def __init__(self):
         print("Loading Object Detection")
         print("Running YOLOv5n")
-        # You can select the size of your model as shown in the previous image.
         self.model = torch.hub.load('yolov5', 'yolov5n', source='local')
-        # To detect specific categories, 2: car,5: bus,7: truck ,for more categories 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml'
+        # To detect specific categories, 2: car,5: bus,7: truck ,for more categories
+        # 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml'
         self.model.classes = [2, 5, 7]
         # Reject any predictions with less than 60% confidence
         self.threshold = CONFIDENCE_THRESHOLD
 
+    def calc_area(self, xmin, ymin, xmax, ymax):
+        width = round(abs(xmax - xmin))
+        height = round(abs(ymax - ymin))
+        return width * height
+
     def detect(self, frame):
-        self.x1, self.y1, self.x2, self.y2, self.text, self.conf = DEF_VAL, DEF_VAL, DEF_VAL,\
-            DEF_VAL, DEF_TXT, DEF_FLOAT
-        self.result = self.model(frame)
-        self.df = self.result.pandas().xyxy[0]
+        x1, y1, x2, y2, text, conf, area = DEF_VAL, DEF_VAL, DEF_VAL, DEF_VAL, DEF_TXT, DEF_FLOAT, DEF_VAL
+        result = self.model(frame)
+        df = result.pandas().xyxy[0]
+        df = df[df['confidence'] > self.threshold]
+
+        if not df.empty:
+            # add Area Column to data frame to get the highest car area
+            df['area'] = df.apply(lambda x: self.calc_area(x['xmin'], x['ymin'], x['xmax'], x['ymax']),
+                                  axis=1)
+            # to get Just only one car with the highest area. If you want to get all cars, just loop on index in
+            # df.index.
+            highest_car_area = df.iloc[df['area'].idxmax()]
+
+            # We make constraint over  the largest area car with acceptable confidence, and we can also add area
+            # thresholding constraint 'Future plan'.
+
+            x1, y1 = int(highest_car_area['xmin']), int(highest_car_area['ymin'])
+            x2, y2 = int(highest_car_area['xmax']), int(highest_car_area['ymax'])
+            label = highest_car_area['name']
+            conf = highest_car_area['confidence']
+            text = label + ' , ' + str(conf.round(decimals=2))
+            area = highest_car_area['area']
         print('======================================================================================')
         print('===================================== Cars Detection ==================================')
         print('======================================================================================')
-        print(self.df)
+        print(df)
         print('======================================================================================')
         print('======================================================================================')
-
-        if not self.df.empty:
-            # to get Just only one car. If you want to get all cars, just loop on index in df.index.
-            self.first_car_index = self.df.index[0]
-
-            if self.df['confidence'][self.first_car_index] >= self.threshold:
-                self.x1, self.y1 = int(self.df['xmin'][self.first_car_index]),\
-                    int(self.df['ymin'][self.first_car_index])
-                self.x2, self.y2 = int(self.df['xmax'][self.first_car_index]), \
-                    int(self.df['ymax'][self.first_car_index])
-                self.label = self.df['name'][self.first_car_index]
-                self.conf  = self.df['confidence'][self.first_car_index]
-                self.text = self.label + ' , ' + str(self.conf.round(decimals=2))
-
-        return self.x1, self.y1, self.x2, self.y2, self.text, self.conf
+        return x1, y1, x2, y2, text, conf, area
 
 
 # ## Object Tracking Class
@@ -58,7 +71,7 @@ class ObjectTracking:
     def __init__(self):
         print("Loading Object Tracking")
         print("CV models for Tracking")
-        self.tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
+        self.tracker_types = ['BOOSTING', 'MIL', 'KCF', 'TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
         self.tracker_type = self.tracker_types[7]
         self.tracker = DEF_VAL
         if self.tracker_type == 'BOOSTING':
@@ -72,7 +85,7 @@ class ObjectTracking:
         elif self.tracker_type == 'MEDIANFLOW':
             self.tracker = cv2.TrackerMedianFlow_create()
         elif self.tracker_type == 'GOTURN':
-             self.tracker = cv2.TrackerGOTURN_create()
+            self.tracker = cv2.TrackerGOTURN_create()
         elif self.tracker_type == 'MOSSE':
             self.tracker = cv2.TrackerMOSSE_create()
         elif self.tracker_type == "CSRT":
@@ -86,7 +99,7 @@ class ObjectTracking:
     def update_track(self, frame):
         # Update tracker
         ok, bbox = self.tracker.update(frame)
-        bbox = bbox if(bbox[0] > 0 and bbox[1]) else (0, 0, 1, 1)
+        bbox = bbox if (bbox[0] > 0 and bbox[1]) else (0, 0, 1, 1)
         return ok, bbox
 
 
@@ -97,9 +110,9 @@ class ComputerVisionBackApp:
         # ReSize the Frame
         self.width, self.height = width, height
         # Initialize The x1,y1,x2,y2,text,conf,bbox
-        self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.bbox, self.fps = 0, 0, 0, 0, '', 0, 0, 0
-
-        self.timer_limit = DEF_VAL
+        self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.area, self.bbox, self.fps = 0, 0, 0, 0, '', 0, 0, 0, 0
+        # periodic timer To make a new detection
+        self.timer_limit = 100
         # Flag To Run Detection After timerLimit times
         self.periodic_timer = DEF_VAL
         # Flag To Run Detection For The First Frame
@@ -113,21 +126,25 @@ class ComputerVisionBackApp:
         self.ot = ObjectTracking()
         self.front_vehicle_center = self.width / 2
 
-    def run_back(self, timer_limit=100):
-        # periodic timer To make a new detection
-        self.timer_limit = timer_limit
+    def run_back(self):
+
         # Flag To Run Detection After timerLimit times
         self.periodic_timer = DEF_VAL
+
         # Read video (emulates Camera)
-
         video = cv2.VideoCapture(CURRENT_MACHINE_FRAME_SOURCE)
+        logo = cv2.imread('Valeo.png')
+        received_frames = cv2.VideoCapture(CURRENT_MACHINE_FRAME_SOURCE)
 
-        # received_video = cv2.VideoCapture(0)
-        received_frames = com_socket.Client(FRAME_SOURCE_IP, RECEIVED_FRAME_PORT)
+        # received_frames = com_socket.Client(FRAME_SOURCE_IP, RECEIVED_FRAME_PORT)
+
         # Exit if video not opened.
         if not video.isOpened():
             print("Could not open video")
             sys.exit()
+
+        if not received_frames.isOpened():
+            print('Could not Open Received frames Video')
 
         while True:
             # read Frame by frame
@@ -135,21 +152,26 @@ class ComputerVisionBackApp:
             # Resize the Frame
             frame = cv2.resize(frame, (self.width, self.height))
 
+            rec_ok, rec_frame = received_frames.read()  # read received Video
             # Exit if video not opened.
             if not ok:
                 print('Cannot read video file')
                 sys.exit()
-                break
 
+            # Replace The StreamedData with Streamed Frame if it's not None else make it take logo Image
+            if not rec_ok:
+                print('Cannot read Received frames Video')
+                received_frames = logo
             else:
                 # read received Video
-                received_frame = received_frames.receive_frame(4*1024)
-                self.streamed_data = received_frame
+                # received_frame = received_frames.receive_frame(4 * 1024)
+                self.streamed_data = rec_frame
 
             # Adjust ROI 'Region of interest'
             # ROI bounding Box
-            cv2.rectangle(frame, (self.C_X-self.tolerance, self.C_Y), (self.C_X + self.tolerance, self.height), (0, 255,
-                                                                                                                 0), 2)
+            cv2.rectangle(frame, (self.C_X - self.tolerance, self.C_Y), (self.C_X + self.tolerance, self.height),
+                          (0, 255,
+                           0), 2)
             # ROI Center Point
             cv2.circle(frame, (self.C_X, self.C_Y), radius=0, color=(0, 0, 255), thickness=5)
 
@@ -159,7 +181,7 @@ class ComputerVisionBackApp:
             # Detect the Car at the first frame and pass the result to the initial function of Tracking
             if self.is_first_frame:
                 # detecting a car in ROI
-                self.x1, self.y1, self.x2, self.y2, self.text, self.conf = self.od.detect(roi_frame)
+                self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.area = self.od.detect(roi_frame)
                 if self.conf != 0:
                     w = abs(self.x1 - self.x2)
                     h = abs(self.y1 - self.y2)
@@ -174,8 +196,8 @@ class ComputerVisionBackApp:
                     print('**********************************************************************')
 
             else:
-                if self.periodic_timer % timer_limit == 0 or self.conf == 0:
-                    self.x1, self.y1, self.x2, self.y2, self.text, self.conf = self.od.detect(roi_frame)
+                if self.periodic_timer % self.timer_limit == 0 or self.conf == 0:
+                    self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.area = self.od.detect(roi_frame)
                     # So there is a car detected
                     if self.conf != 0:
                         w = abs(self.x1 - self.x2)
@@ -186,7 +208,8 @@ class ComputerVisionBackApp:
                         print('############### Car Detection After A Periodic Timer ###############')
                         print('BBOX : ', self.bbox)
                         print("===================")
-                        print("Metadata :  x1: ", self.x1, ' , y1: ', self.y1, ' , x2: ', self.x2, ' , y2: ',self.y2, ' , text_conf: ', self.text)
+                        print("Metadata :  x1: ", self.x1, ' , y1: ', self.y1, ' , x2: ', self.x2, ' , y2: ', self.y2,
+                              ' , text_conf: ', self.text)
                         print("===================")
                         print('####################################################################')
 
@@ -195,7 +218,7 @@ class ComputerVisionBackApp:
                     print('****************************************** Repeat Detection '
                           '******************************************')
 
-            self.periodic_timer = self.periodic_timer + 1     # Increment the Counter of The Period_counter Flag
+            self.periodic_timer = self.periodic_timer + 1  # Increment the Counter of The Period_counter Flag
 
             print('========================================== TIME : ', self.periodic_timer,
                   '=============================================')
@@ -215,7 +238,7 @@ class ComputerVisionBackApp:
                 ok, bbox = self.ot.update_track(roi_frame)
 
                 # Calculate Frames per second (FPS)
-                fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
+                self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
 
                 # Tracking success
                 if ok:
@@ -224,7 +247,8 @@ class ComputerVisionBackApp:
                     print('######################################################')
                     row_data = [0, 0, 0, 0]
                     self.front_vehicle_center = mathematics.mathlib.frame_to_positions(
-                        row_data=[bbox[0], bbox[1], bbox[2], bbox[3]], frame_size=[self.width, self.height], mode="BACK")
+                        row_data=[bbox[0], bbox[1], bbox[2], bbox[3]], frame_size=[self.width, self.height],
+                        mode="BACK")
                     # (x1,y1)
                     p1 = (int(bbox[0]), int(bbox[1]))
                     # (x2,y2)
@@ -232,41 +256,40 @@ class ComputerVisionBackApp:
                     # Blue Rectangle For Tracking
                     cv2.rectangle(roi_frame, p1, p2, (0, 0, 255), 3)
                     # The Tracked Part Of The original Frame
-                    self.tracking_area = roi_frame[ bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])]
-                    print('########################################## tracking_area SHAPE : ', self.tracking_area.shape)
+                    self.tracking_area = roi_frame[bbox[1]: (bbox[1] + bbox[3]), bbox[0]: (bbox[0] + bbox[2])]
                     # Resize the streamedData
                     if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
                         self.streamed_data = None
                     else:
                         self.streamed_data = cv2.resize(self.streamed_data,
                                                         (self.tracking_area.shape[1], self.tracking_area.shape[0]))
-                        print('########################################### streamed Data SHAPE : ',
-                              self.streamed_data.shape)
+
                         # The next instruction will put the streamed frame on the tracked car frame.
-                        # In Future plans we cane use image blending or image superimposing concepts.
-                        roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
-                            self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
-                            else None
+                        if self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0:
+                            roi_frame[bbox[1]: (bbox[1] + bbox[3]), bbox[0]: (bbox[0] + bbox[2])] = cv2.addWeighted(
+                                roi_frame[bbox[1]: (bbox[1] + bbox[3]), bbox[0]: (bbox[0] + bbox[2])], 0.4,
+                                self.streamed_data, 0.6, 0)
+                        else:
+                            roi_frame[bbox[1]: (bbox[1] + bbox[3]), bbox[0]: (bbox[0] + bbox[2])] = None
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
-            # End Tracking
-                cv2.rectangle(roi_frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255,255), 2)
+                # End Tracking
+                cv2.rectangle(roi_frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255, 255), 2)
 
-            self.x1, self.y1, self.x2, self.y2, self.text = 0,0,0,0,''
+            self.x1, self.y1, self.x2, self.y2, self.text = 0, 0, 0, 0, ''
             cv2.putText(frame, "{} {}".format("Frame NO : ", self.periodic_timer), (23, 50), cv2.FONT_HERSHEY_PLAIN,
                         2, (0, 255, 255), 2)
             # Display FPS on frame
-            cv2.putText(frame, "FPS : " + str(int(fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
+            cv2.putText(frame, "FPS : " + str(int(self.fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255),
+                        2)
             cv2.imshow('Dashboard', frame)
-            #cv2.imshow('Streamed Data', received_frame)
-            #cv2.imshow("Tracking_area", self.tracking_area)
             # cv2.waitKey(0)
             # Exit if ESC pressed
-            # Press SPACE for exit
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         video.release()
         cv2.destroyAllWindows()
 
-    def run_front(self):
-        pass
+
+test = ComputerVisionBackApp()
+test.run_back()
