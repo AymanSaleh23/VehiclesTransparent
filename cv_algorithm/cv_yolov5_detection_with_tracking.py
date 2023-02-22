@@ -11,7 +11,7 @@ DEF_TXT = ''
 CONFIDENCE_THRESHOLD = 0.65
 RECEIVED_FRAME_PORT = 10080
 FRAME_SOURCE_IP = '192.168.1.11'
-CURRENT_MACHINE_FRAME_SOURCE = "video2.mp4"
+CURRENT_MACHINE_FRAME_SOURCE = "video5.mp4"
 
 
 # Object Detection Class
@@ -103,7 +103,7 @@ class ObjectTracking:
         return ok, bbox
 
 
-class ComputerVisionBackApp:
+class ComputerVisionBackAppWithTracking:
     def __init__(self, width=1000, height=700):
         # Some Initial  Parameters
         self.tracking_area = DEF_VAL
@@ -149,8 +149,6 @@ class ComputerVisionBackApp:
         while True:
             # read Frame by frame
             ok, frame = video.read()
-            # Resize the Frame
-            frame = cv2.resize(frame, (self.width, self.height))
 
             rec_ok, rec_frame = received_frames.read()  # read received Video
             # Exit if video not opened.
@@ -166,6 +164,9 @@ class ComputerVisionBackApp:
                 # read received Video
                 # received_frame = received_frames.receive_frame(4 * 1024)
                 self.streamed_data = rec_frame
+
+            # Resize the Frame
+            frame = cv2.resize(frame, (self.width, self.height))
 
             # Adjust ROI 'Region of interest'
             # ROI bounding Box
@@ -291,5 +292,5 @@ class ComputerVisionBackApp:
         cv2.destroyAllWindows()
 
 
-test = ComputerVisionBackApp()
+test = ComputerVisionBackAppWithTracking()
 test.run_back()
