@@ -169,7 +169,7 @@ class Client:
         try:
             if self.is_connected == True and self.socket_created == True:
                 while len(self.data) < self.payload_size:
-                    packet = self.recv(1024)
+                    packet = self.recv(4*size)
                     if not packet:
                         break
                     self.data += packet
@@ -177,7 +177,7 @@ class Client:
                 self.data = self.data[self.payload_size:]
                 msg_size = struct.unpack("Q", packed_msg_size)[0]
                 while len(self.data) < msg_size:
-                    self.data += self.recv(1024)
+                    self.data += self.recv(4*size)
                 frame_data = self.data[:msg_size]
                 self.data = self.data[msg_size:]
                 frame = pickle.loads(frame_data)
