@@ -28,8 +28,20 @@ class Server:
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((ip, port))
         self.s.listen(5)
+        self.ip = ip
+        self.port = port
         self.to_send = "initial..."
 
+        try:
+            self.client_socket, self.addr = self.s.accept()
+            print('Connection from:', self.addr)
+
+        except Exception:
+            #   A debug print to console informs that an exception occurred
+            print("> Server Exception connection")
+            #   Simple wait for speed down the execution (optional and will be deleted in future)
+            time.sleep(1)
+            self.__init__(self.ip, self.port)
 
     def send(self):
         """
@@ -95,29 +107,24 @@ class Server:
         self.to_send = new_data
         #>>>      End Critical Section      <<<
 
-    def send_frames(self):
-        while True:
-            try:
-                client_socket, addr = self.s.accept()
-                print('Connection from:', addr)
-                if client_socket:
-                    vid = cv2.VideoCapture(0)
-                    while True:
-                        img, frame = vid.read()
-                        a = pickle.dumps(frame)
-                        message = struct.pack("Q", len(a)) + a
-                        client_socket.sendall(message)
-                        cv2.imshow('Sending...', frame)
-                        key = cv2.waitKey(10)
-                        if key == 13:
-                            client_socket.close()
-            except Exception:
-                #   A debug print to console informs that an exception occurred
-                print("> Server Exception connection")
-                #   Simple wait for speed down the execution (optional and will be deleted in future)
-                time.sleep(1)
-                #   Retry the connection by call {self.send()} to accept a new connection request from the Client.
-                self.send_frames()
+    def send_frame(self, frame_to_send):
+        try:
+            if self.client_socket:
+                a = pickle.dumps(frame_to_send)
+                message = struct.pack("Q", len(a)) + a
+                self.client_socket.sendall(message)
+                cv2.imshow('Sending This Frame...', frame_to_send)
+                key = cv2.waitKey(10)
+                if key == 13:
+                    self.client_socket.close()
+        except Exception:
+            self.client_socket.close()
+            self.s.close()
+            self.__init__(self.ip, self.port)
+            #   Retry the connection by call {self.send()} to accept a new connection request from the Client.
+            self.send_frame(frame_to_send)
+
+
 
 class Client:
     def __init__(self, ip, port):
