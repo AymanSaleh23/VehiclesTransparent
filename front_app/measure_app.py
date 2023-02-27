@@ -9,17 +9,27 @@ from comlib.com_socket import *
 from threading import Thread
 
 if __name__ == "__main__":
+    """
+    - Create Socket for measurement (inner socket)
+    - Create Socket for send discrete (outer socket)
+    - Create Angle, US objects.
+    - run send discrete socket in thread
+    """
     in_cv2measure_sock_angle = Client(ip="127.0.0.1", port=10051)
-    in_measure2com_sock_angle = Server(ip="127.0.0.1", port=10052)
-    thrd_asynch_send_dist = Thread(target=in_measure2com_sock_angle.send, args=[])
-    thrd_asynch_send_dist.setDaemon(True)
-    thrd_asynch_send_dist.start()
+    out_sock_disc = Server(ip="192.168.1.11", port=10052)
 
     servo_obj_list = [Angles(servo_pin=11), Angles(servo_pin=12), Angles(servo_pin=13)]
     us_obj_list = [Measure(trig=22, echo=23), Measure(trig=24, echo=25), Measure(trig=26, echo=27)]
+
     dist_list = [0]*3
     cv_angle_list = last_angle_values = [0]*3
+
+    t_send_disc = Thread(target=out_sock_disc.send, args=[])
+    t_send_disc.setDaemon(True)
+    t_send_disc.start()
+
     while True:
+        time.sleep(0.3)
         try:
             cv_angle_list = in_cv2measure_sock_angle.recv_discrete()
         except Exception:
@@ -29,4 +39,4 @@ if __name__ == "__main__":
             servo_obj_list[section].set_angle(cv_angle_list[section])
             dist_list[section] = us_obj_list[section].distance_read()
         last_angle_values = cv_angle_list
-        in_measure2com_sock_angle.update_to_send(dist_list)
+        out_sock_disc.update_to_send(dist_list)

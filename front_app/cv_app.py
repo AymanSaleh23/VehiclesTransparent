@@ -1,30 +1,36 @@
-import threading
+from threading import Thread
 import time
 from comlib.com_socket import *
-from cv_algorithm.multi_cars_detection import ComputerVisionFrontal
+from cv_algorithm.cv_front import ComputerVisionFrontal
 from front_app.cv_global_variables import CVFrontGlobalVariables
 
 if __name__ == "__main__":
+    '''
+    - Create CV object.
+    - run Cv_obj.run_front() in thread.
+    - Update frame, discrete from Cv_obj's attributes {frame_to_send}, {angle_to_send}
+    - send discrete from Cv_obj's attributes {angle_to_send} to measurement module
+    - send frame from Cv_obj's attributes {frame_to_send} to outer machine
+    '''
+
     # instance for run ComputerVisionFrontal class
     computer_vision_frontal_instance = ComputerVisionFrontal()
-    in_cv2measure_sock_angle = Server(port=10051, ip='127.0.0.1')
-    in_cv2comm_sock_frame = Server(port=10053, ip='127.0.0.1')
+    out_sock_frame = Server(ip="192.168.1.11", port=10050)
+    in_sock_disc = Server(ip="127.0.0.1", port=10051)
 
-    thrd_asynch_send_angle = threading.Thread(target=in_cv2measure_sock_angle.send, args=[])
-    thrd_asynch_send_angle.setDaemon(True)
+    # CV model run front in thread
+    t_cv_front = Thread(target=computer_vision_frontal_instance.run_front, args=[])
+    t_cv_front.setDaemon(True)
 
-    thrd_asynch_send_frame = threading.Thread(target=in_cv2comm_sock_frame.send, args=[])
-    thrd_asynch_send_frame.setDaemon(True)
+    # send discrete run in thread
+    t_disc_send = Thread(target=in_sock_disc.send, args=[])
+    t_disc_send.setDaemon(True)
 
-    thrd_asynch_run_front = threading.Thread(target=computer_vision_frontal_instance.run_front, args=[])
-    thrd_asynch_run_front.setDaemon(True)
+    t_cv_front.start()
+    t_disc_send.start()
 
-    thrd_asynch_send_angle.start()
-    thrd_asynch_run_front.start()
-    thrd_asynch_send_frame.start()
 
     while True:
-        in_cv2measure_sock_angle.update_to_send(CVFrontGlobalVariables.detected_cars_centers_list)
-        in_cv2comm_sock_frame.update_to_send(CVFrontGlobalVariables.frame)
-
-        time.sleep(2)
+        in_sock_disc.update_to_send(computer_vision_frontal_instance.angle_to_send)
+        out_sock_frame.send_frame(computer_vision_frontal_instance.frame_to_send)
+        time.sleep(0.3)

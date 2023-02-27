@@ -1,6 +1,6 @@
 from comlib.com_socket import Client
 import time
-c = Client(ip="192.168.1.11", port=10080)
+c = Client(ip="192.168.1.11", port=10051)
 while True:
     print(c.recv_discrete())
     time.sleep(1)

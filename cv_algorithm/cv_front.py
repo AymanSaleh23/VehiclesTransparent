@@ -1,7 +1,9 @@
 import sys
+import time
 
 import cv2
 import torch
+from sphinx.theming import Theme
 
 from front_app.cv_global_variables import CVFrontGlobalVariables
 from mathematics.mathlib import map_values_ranges
@@ -128,28 +130,33 @@ class ComputerVisionFrontal:
         self.width, self.height = width, height
         # Detection Instances
         self.od = MultiCarsDetection(width=width, height=height)
-
+        self.frame_to_send = None
+        self.angle_to_send = None
         # Read video
-        self.video = cv2.VideoCapture("video5.mp4")
+        self.video = cv2.VideoCapture("video2.mp4")
 
     def run_front(self):
 
         # Exit if video not opened.
         if not self.video.isOpened():
             print("Could not open video")
-            CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
+            #CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
+            self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
             sys.exit()
 
         while True:
             # Read Frame by frame
             ok, frame = self.video.read()
-            CVFrontGlobalVariables.frame = frame
             frame = cv2.resize(frame, (self.width, self.height))  # Resize the Frame
+
+            #CVFrontGlobalVariables.frame = frame
+            self.frame_to_send = frame
 
             # Exit if video not opened.
             if not ok:
                 print('Cannot read video file')
-                CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
+                #CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
+                self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
                 sys.exit()
 
             cars_sections = self.od.detect(frame=frame)
@@ -160,7 +167,8 @@ class ComputerVisionFrontal:
                                   output_range_max=180) for c in cars_sections]
             print('position_angels : ', position_angels)
             print('cars_sections : ',cars_sections)
-            CVFrontGlobalVariables.detected_cars_centers_list = position_angels
+            #CVFrontGlobalVariables.detected_cars_centers_list = position_angels
+            self.angle_to_send = position_angels
 
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             print('Detected Left Car center  : ')
@@ -188,7 +196,8 @@ class ComputerVisionFrontal:
             #         cv2.waitKey(0)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # if press q
-                CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
+                #CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
+                self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
                 break
 
         self.video.release()
