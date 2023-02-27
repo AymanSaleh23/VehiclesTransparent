@@ -15,6 +15,7 @@ if __name__ == "__main__":
     - Create Angle, US objects.
     - run send discrete socket in thread
     """
+    current_v_length = 5
     in_cv2measure_sock_angle = Client(ip="127.0.0.1", port=10051)
     out_sock_disc = Server(ip="192.168.1.11", port=10052)
 
@@ -39,4 +40,5 @@ if __name__ == "__main__":
             servo_obj_list[section].set_angle(cv_angle_list[section])
             dist_list[section] = us_obj_list[section].distance_read()
         last_angle_values = cv_angle_list
-        out_sock_disc.update_to_send(dist_list)
+        to_send_dist_angl = [[d, a] for d in dist_list for a in cv_angle_list]
+        out_sock_disc.update_to_send([to_send_dist_angl, current_v_length])
