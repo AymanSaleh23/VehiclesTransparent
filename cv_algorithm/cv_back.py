@@ -1,3 +1,5 @@
+import time
+
 import torch, cv2, sys
 from comlib import com_socket
 import mathematics.mathlib
@@ -143,7 +145,7 @@ class ComputerVisionBackApp:
 
             else:
                 # read received Video
-                received_frame = received_frames.receive_frame(4*1024)
+                received_frame = received_frames.receive_frame(512)
                 self.streamed_data = received_frame
 
             # Adjust ROI 'Region of interest'
@@ -267,6 +269,3 @@ class ComputerVisionBackApp:
                 break
         video.release()
         cv2.destroyAllWindows()
-
-    def run_front(self):
-        pass
