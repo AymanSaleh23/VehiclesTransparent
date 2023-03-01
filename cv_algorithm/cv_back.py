@@ -23,7 +23,7 @@ class SingleCardDetection:
         # You can select the size of your model as shown in the previous image.
         self.model = torch.hub.load('yolov5', 'yolov5n', source='local')
         # To detect specific categories, 2: car,5: bus,7: truck ,for more categories 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml'
-        self.model.classes = [2, 5, 7]
+        self.model.classes_to_detect = [2, 5, 7]
         # Reject any predictions with less than 60% confidence
         self.threshold = CONFIDENCE_THRESHOLD
 
@@ -40,7 +40,7 @@ class SingleCardDetection:
         print('======================================================================================')
 
         if not self.df.empty:
-            # to get Just only one car. If you want to get all cars, just loop on index in df.index.
+            # to get Just only one car. If you want to get all cars, just loop on index in detected_vehicles_data_frame.index.
             self.first_car_index = self.df.index[0]
 
             if self.df['confidence'][self.first_car_index] >= self.threshold:

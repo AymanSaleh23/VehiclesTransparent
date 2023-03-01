@@ -1,7 +1,7 @@
 from threading import Thread
 import time
 from comlib.com_socket import *
-from cv_algorithm.cv_front import ComputerVisionFrontal
+from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 from front_app.cv_global_variables import CVFrontGlobalVariables
 
 if __name__ == "__main__":
