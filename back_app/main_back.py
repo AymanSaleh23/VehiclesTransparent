@@ -1,7 +1,7 @@
 from threading import Thread
 import time
 from comlib.com_socket import *
-from cv_algorithm.cv_back import ComputerVisionBackApp
+from cv_algorithm.back_computer_vision_app import ComputerVisionBackApp
 # uncomment to test on RPi
 #from distances.dist_measure import *
 #from distances.dist_angle import *
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     while True:
         discrete = out_sock_disc.recv_discrete()
         print(f"Received Discrete: {discrete}")
-        abs_dist = math_model(data=discrete[0], vehicle_length=discrete[1],
-                              direct_distance=us_obj.distance_read(), theta=90)
-        print(f"Absolute Distances: {abs_dist}")
-        time.sleep(0.3)
+        # abs_dist = math_model(data=discrete[0], vehicle_length=discrete[1],
+        #                       direct_distance=us_obj.distance_read(), theta=90)
+        # print(f"Absolute Distances: {abs_dist}")
+        time.sleep(1)

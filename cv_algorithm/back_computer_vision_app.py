@@ -93,7 +93,7 @@ class ObjectTracking:
 
 
 class ComputerVisionBackApp:
-    def __init__(self, width=1000, height=700):
+    def __init__(self, width=500, height=300):
         # Some Initial  Parameters
         self.tracking_area = DEF_VAL
         # ReSize the Frame
@@ -114,6 +114,8 @@ class ComputerVisionBackApp:
         self.od = SingleCardDetection()
         self.ot = ObjectTracking()
         self.front_vehicle_center = self.width / 2
+        # received_video = cv2.VideoCapture(0)
+        self.received_frames_sock = com_socket.Client(FRAME_SOURCE_IP, RECEIVED_FRAME_PORT)
 
     def run_back(self, timer_limit=100):
         # periodic timer To make a new detection
@@ -124,8 +126,6 @@ class ComputerVisionBackApp:
 
         video = cv2.VideoCapture(CURRENT_MACHINE_FRAME_SOURCE)
 
-        # received_video = cv2.VideoCapture(0)
-        received_frames = com_socket.Client(FRAME_SOURCE_IP, RECEIVED_FRAME_PORT)
         # Exit if video not opened.
         if not video.isOpened():
             print("Could not open video")
@@ -145,7 +145,7 @@ class ComputerVisionBackApp:
 
             else:
                 # read received Video
-                received_frame = received_frames.receive_frame(512)
+                received_frame = self.received_frames_sock.receive_frame(1024)
                 self.streamed_data = received_frame
 
             # Adjust ROI 'Region of interest'
@@ -240,15 +240,18 @@ class ComputerVisionBackApp:
                     if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
                         self.streamed_data = None
                     else:
-                        self.streamed_data = cv2.resize(self.streamed_data,
-                                                        (self.tracking_area.shape[1], self.tracking_area.shape[0]))
-                        print('########################################### streamed Data SHAPE : ',
-                              self.streamed_data.shape)
-                        # The next instruction will put the streamed frame on the tracked car frame.
-                        # In Future plans we cane use image blending or image superimposing concepts.
-                        roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
-                            self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
-                            else None
+                        try:
+                            self.streamed_data = cv2.resize(self.streamed_data,
+                                                            (self.tracking_area.shape[1], self.tracking_area.shape[0]))
+                            print('########################################### streamed Data SHAPE : ',
+                                  self.streamed_data.shape)
+                            # The next instruction will put the streamed frame on the tracked car frame.
+                            # In Future plans we cane use image blending or image superimposing concepts.
+                            roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
+                                self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
+                                else None
+                        except Exception:
+                            print("Frame have no Size to reshape")
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
             # End Tracking
@@ -259,7 +262,7 @@ class ComputerVisionBackApp:
                         2, (0, 255, 255), 2)
             # Display FPS on frame
             cv2.putText(frame, "FPS : " + str(int(fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
-            cv2.imshow('Dashboard', frame)
+            cv2.imshow('Back View', frame)
             #cv2.imshow('Streamed Data', received_frame)
             #cv2.imshow("Tracking_area", self.tracking_area)
             # cv2.waitKey(0)

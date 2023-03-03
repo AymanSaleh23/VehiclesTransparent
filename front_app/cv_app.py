@@ -2,7 +2,6 @@ from threading import Thread
 import time
 from comlib.com_socket import *
 from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
-from front_app.cv_global_variables import CVFrontGlobalVariables
 
 if __name__ == "__main__":
     '''
@@ -33,4 +32,4 @@ if __name__ == "__main__":
     while True:
         in_sock_disc.update_to_send(computer_vision_frontal_instance.angle_to_send)
         out_sock_frame.send_frame(computer_vision_frontal_instance.frame_to_send)
-        time.sleep(0.3)
+        time.sleep(0.1)

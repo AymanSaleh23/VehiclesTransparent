@@ -128,7 +128,7 @@ class MultiCarsDetection:
 
 class ComputerVisionFrontal:
 
-    def __init__(self, width=1000, height=700):
+    def __init__(self, width=500, height=300):
         # Some Initial  Parameters
         self.width, self.height = width, height
         # Detection Instances
@@ -136,7 +136,7 @@ class ComputerVisionFrontal:
         self.frame_to_send = None
         self.angle_to_send = None
         # Read video
-        self.video = cv2.VideoCapture("video5.mp4")  # CAMERA - RECORDED VIDEO - SIMULATION
+        self.video = cv2.VideoCapture(0)  # CAMERA - RECORDED VIDEO - SIMULATION
 
     def run_front(self):
 
@@ -194,7 +194,7 @@ class ComputerVisionFrontal:
             cv2.putText(frame, "Right Section", (round(self.width / (3 / 2)) + 5, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
                         (255, 0, 0), 2)
             # Showing The Video Frame
-            cv2.imshow('test_Image', frame)
+            cv2.imshow('Current Front', frame)
 
             #         cv2.waitKey(0)
 
@@ -207,5 +207,5 @@ class ComputerVisionFrontal:
         cv2.destroyAllWindows()
 
 
-obj = ComputerVisionFrontal()
-obj.run_front()
+# obj = ComputerVisionFrontal()
+# obj.run_front()

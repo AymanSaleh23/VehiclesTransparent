@@ -33,6 +33,7 @@ if __name__ == "__main__":
         time.sleep(0.3)
         try:
             cv_angle_list = in_cv2measure_sock_angle.recv_discrete()
+            print(f"Angle List received: {cv_angle_list}")
         except Exception:
             cv_angle_list = [45, 90, 135]
         # Check if the last received values is different
