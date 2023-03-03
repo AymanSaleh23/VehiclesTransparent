@@ -113,7 +113,7 @@ class Server:
                 a = pickle.dumps(frame_to_send)
                 message = struct.pack("Q", len(a)) + a
                 self.client_socket.sendall(message)
-                cv2.imshow('Sending This Frame...', frame_to_send)
+                cv2.imshow('SOCK_Sending This Frame...', frame_to_send)
                 key = cv2.waitKey(10)
                 if key == 13:
                     self.client_socket.close()
@@ -181,7 +181,7 @@ class Client:
                 frame_data = self.data[:msg_size]
                 self.data = self.data[msg_size:]
                 frame = pickle.loads(frame_data)
-                cv2.imshow("RECEIVING VIDEO", frame)
+                cv2.imshow("SOCK_RECEIVING VIDEO", frame)
                 key = cv2.waitKey(1) & 0xFF
                 return frame
         except Exception:
@@ -224,9 +224,9 @@ class Client:
                 #   A small wait for a new connection request
                 time.sleep(0.2)
                 #   Close the failed connection
-                self.s.close()
+                #self.s.close()
                 #   Update the status of the boolean variable indicates the socket is closed
-                self.socket_created = False
+                #self.socket_created = False
                 self.is_connected = False
                 #   Request a new connection from the same server {ip} address and {port} application
                 self.recv(1024)
@@ -246,7 +246,7 @@ class Client:
                     print("> Received: ", self.data_recv, end=" >> ")
                     #   A debug print to console informs the length of received data and its type
                     print(f"Length :{len(self.data_recv)} , type {type(self.data_recv)}")
-                    self.s.sendall(b"> R:Received Successfully")
+                    #self.s.sendall(b"> R:Received Successfully")
                     #   Check if no data received which happen if server crashed.
                     if len(self.data_recv) == 0:
                         #   Request a new connection from the same server {ip} address and {port} application
@@ -260,8 +260,8 @@ class Client:
                 #   A small wait for a new connection request
                 time.sleep(0.2)
                 #   Close the failed connection
-                self.s.close()
+                #self.s.close()
                 #   Update the status of the boolean variable indicates the socket is closed
-                self.socket_created = False
+                #self.socket_created = False
                 #   Request a new connection from the same server {ip} address and {port} application
                 self.recv(1024)

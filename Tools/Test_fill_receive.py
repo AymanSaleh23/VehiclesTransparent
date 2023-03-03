@@ -20,7 +20,7 @@ class ObjectDetection:
         print("Loading Object Detection")
         print("Running YOLOv5n")
         self.model = torch.hub.load('yolov5', 'yolov5n', source= 'local')
-        self.model.classes = [2,5,7]
+        self.model.classes_to_detect = [2, 5, 7]
         self.threshold = 0.6
 #         self.x1, self.y1, self.x2, self.y2, self.text, self.conf = 0,0,0,0,'',0.0 
 
@@ -31,7 +31,7 @@ class ObjectDetection:
         print('===========================================')
         print(self.df)
         if(not self.df.empty):
-            # to get Just only one car. If you want to get all cars, just loop on index in df.index.
+            # to get Just only one car. If you want to get all cars, just loop on index in detected_vehicles_data_frame.index.
             self.firstCarIndex = self.df.index[0]
             
             if(self.df['confidence'][self.firstCarIndex] >= self.threshold):
