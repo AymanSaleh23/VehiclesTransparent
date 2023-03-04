@@ -13,5 +13,5 @@ class Measure:
     def distance_read(self):
         from random import randint
         ran = randint(0, 34)
-        print(f"r_distance: {ran}")
+        # print(f"r_distance: {ran}")
         return ran

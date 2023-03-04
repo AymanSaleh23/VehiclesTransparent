@@ -8,7 +8,7 @@ DEF_VAL = 0
 DEF_FLOAT = 0.0
 DEF_TXT = ''
 CONFIDENCE_THRESHOLD = 0.6
-RECEIVED_FRAME_PORT = 10050
+RECEIVED_FRAME_PORT = 20070
 FRAME_SOURCE_IP = '192.168.1.11'
 CURRENT_MACHINE_FRAME_SOURCE = "video2.mp4"
 
@@ -270,5 +270,6 @@ class ComputerVisionBackApp:
             # Press SPACE for exit
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+            time.sleep(0.01)
         video.release()
         cv2.destroyAllWindows()

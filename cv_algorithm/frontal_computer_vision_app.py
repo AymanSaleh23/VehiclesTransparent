@@ -1,4 +1,6 @@
 import sys
+import time
+
 import cv2
 import torch
 
@@ -136,7 +138,7 @@ class ComputerVisionFrontal:
         self.frame_to_send = None
         self.angle_to_send = None
         # Read video
-        self.video = cv2.VideoCapture(0)  # CAMERA - RECORDED VIDEO - SIMULATION
+        self.video = cv2.VideoCapture("video2.mp4")  # CAMERA - RECORDED VIDEO - SIMULATION
 
     def run_front(self):
 
@@ -151,9 +153,6 @@ class ComputerVisionFrontal:
             # Read Frame by frame
             ok, frame = self.video.read()
             frame = cv2.resize(frame, (self.width, self.height))  # Resize the Frame
-
-            # CVFrontGlobalVariables.frame = frame
-            self.frame_to_send = frame
 
             # Exit if video not opened.
             if not ok:
@@ -170,6 +169,10 @@ class ComputerVisionFrontal:
                                   output_range_max=180) for c in cars_sections]
             print('position_angels : ', position_angels)
             print('cars_sections : ', cars_sections)
+
+            # CVFrontGlobalVariables.frame = frame
+            self.frame_to_send = frame
+
             # CVFrontGlobalVariables.detected_cars_centers_list = position_angels
             self.angle_to_send = position_angels
 
@@ -202,6 +205,7 @@ class ComputerVisionFrontal:
                 # CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
                 self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
                 break
+            time.sleep(0.01)
 
         self.video.release()
         cv2.destroyAllWindows()
