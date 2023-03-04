@@ -21,10 +21,10 @@ class Gui:
         main_window.title("Front car")
         main_window.geometry("1500x850")
         main_window.configure(background="#73dfed")
-        #main_window.attributes("-fullscreen", True)
-        # main_window.resizable(0, 0)
+        main_window.attributes("-fullscreen", True)
+        main_window.resizable(0, 0)
 
-        image = ImageTk.PhotoImage(file='img.jpg')
+        image = ImageTk.PhotoImage(file='photo.png')
         canvas = Canvas(main_window, width=1000, height=850)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
@@ -32,17 +32,17 @@ class Gui:
 
         # create label for page address
         page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Front car ',background="#AFD1EE")
-        page_address.place(relx=.5, rely=.15, anchor="center")
+        page_address.place(relx=.5, rely=.02, anchor="center")
 
         # configure style for button
         style = Style()
-        style.configure('TButton', font=('calibre', 22, 'bold'), borderwidth='5',background="#AFD1EE")
-        style.map('TButton', foreground=[('active', 'green')],
-                  background=[('active', "green")])
+        style.configure('TButton', font=('calibre', 34, 'bold'), height=700, width=20, borderwidth='5',
+                        background="#AFD1EE", foreground="#2196C1")
+        style.map('TButton', foreground=[('active', 'green')], background=[('active', "green")])
 
         # create Xtra vue button
         xtra_vue_button = Button(main_window, text="XtraVue", command=call_back, width=13)
-        xtra_vue_button.place(relx=.5, rely=.5, anchor="center")
+        xtra_vue_button.place(relx=.75, rely=.52, anchor="center")
 
         main_window.mainloop()
 
