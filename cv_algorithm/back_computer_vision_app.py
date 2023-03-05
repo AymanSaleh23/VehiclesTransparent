@@ -242,6 +242,7 @@ class ComputerVisionBackApp:
                         self.last_streamed_frame = None
                     else:
                         try:
+                            cv2.imshow("SOCK_RECEIVING VIDEO", self.last_streamed_frame)
                             self.last_streamed_frame = cv2.resize(self.last_streamed_frame,
                                                                   (self.tracking_area.shape[1], self.tracking_area.shape[0]))
                             print('########################################### streamed Data SHAPE : ',
@@ -272,7 +273,7 @@ class ComputerVisionBackApp:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             time.sleep(0.01)
-            cv2.imshow("SOCK_RECEIVING VIDEO", self.last_streamed_frame)
+
             self.last_streamed_frame = self.current_streamed_frame
         video.release()
         cv2.destroyAllWindows()

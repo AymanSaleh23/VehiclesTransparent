@@ -130,7 +130,7 @@ class Server:
                     a = pickle.dumps(frame_to_send)
                     message = struct.pack("Q", len(a)) + a
                     self.client_socket.sendall(message)
-                    cv2.imshow('SOCK_Sending This Frame...', frame_to_send)
+                    cv2.imshow('SOCK_Sending This Frame...', frame_to_send["F"])
                     key = cv2.waitKey(10)
                     if key == 13:
                         self.client_socket.close()
@@ -171,7 +171,8 @@ class Client:
 
         """ Will be received from Socket"""
         while not self.connected:
-            self.connect_mechanism(f"{self.name}:[receive_frame()]")
+            self.connect_mechanism(f"{self.name}:[receive_all()]")
+            time.sleep(0.7)
 
         if self.connected:
             try:
@@ -188,8 +189,9 @@ class Client:
                 encoded_data = self.data[:msg_size]
                 self.data = self.data[msg_size:]
                 decoded_data = pickle.loads(encoded_data)
-                self.last_received_data = decoded_data
-                return decoded_data
+                print(f'decoded_data["D"]: {decoded_data["D"]}')
+                # self.last_received_data = decoded_data["F"], decoded_data["D"]
+                return decoded_data["F"], decoded_data["D"]
 
             except Exception:
                 self.connected = False
@@ -200,7 +202,7 @@ class Client:
                 self.recreate()
                 time.sleep(0.5)
 
-        return self.last_received_data
+        return None, None
 
     def recv_discrete(self):
         """
@@ -264,3 +266,21 @@ class Client:
                 print(f"> Client {r_sock_tye} Socket Connection Error.")
                 self.connected = False
                 time.sleep(0.1)
+
+
+class DataHolder:
+    def __init__(self):
+        self.frame, self.discrete = None, None
+    def get_frame(self):
+        return self.frame
+
+    def get_discrete(self):
+        return self.discrete
+
+    def set_frame(self, frame):
+        self.frame = frame
+
+    def set_discrete(self, discrete):
+        self.discrete = discrete
+
+

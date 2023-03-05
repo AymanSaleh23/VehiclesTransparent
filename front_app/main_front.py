@@ -16,17 +16,19 @@ from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 
 # instance for run ComputerVisionFrontal class
 
-out_sock_frame = Server(ip="192.168.43.208", port=20070, timeout=1, name="Frame Sender")
+out_sock_frame = Server(ip="192.168.1.11", port=20070, timeout=1, name="Frame Sender")
 
 current_v_length = 5
 
 computer_vision_frontal_instance = None
-to_send_dist_angle = None
+to_send_fd = DataHolder()
 
 def update_all():
     while True:
-        out_sock_frame.send_frame({"F": computer_vision_frontal_instance.frame_to_send,
-                                   "D": to_send_dist_angle.append(current_v_length)})
+        to_send = {"F": to_send_fd.get_frame(),
+                   "D": to_send_fd.get_discrete()}
+        print(f'to send: {to_send["D"]}')
+        out_sock_frame.send_frame(to_send)
         time.sleep(0.01)
 
 if __name__ == "__main__":
@@ -65,6 +67,9 @@ if __name__ == "__main__":
             dist_list[section] = us_obj_list[section].distance_read()
 
         print(f"dist_list: {dist_list}")
-        to_send_dist_angle = [[dist_list[i], cv_angle_list[i]] for i in range(0, 3)]
+        print(f"to_send_fd.get_discrete(): {to_send_fd.get_discrete()}")
+
+        to_send_fd.set_discrete([[dist_list[i], cv_angle_list[i]] for i in range(0, 3)].append(current_v_length))
+        to_send_fd.set_frame(computer_vision_frontal_instance.frame_to_send)
 
         time.sleep(0.3)
