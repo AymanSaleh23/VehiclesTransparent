@@ -10,7 +10,7 @@ import os
 '''
 
 
-# call back function to do action for button
+
 
 
 
@@ -47,6 +47,8 @@ class Gui:
         xtra_vue_button = Button(self.main_window, text="XtraVue", command=self.call_back,width=13)
         xtra_vue_button.place(relx=.75, rely=.52, anchor="center")
         self.main_window.mainloop()
+
+    # call back function to do action for button
     def call_back(self):
         print("hello world")
         # os.system('python main.py')
