@@ -16,26 +16,18 @@ from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 
 # instance for run ComputerVisionFrontal class
 
-out_sock_frame = Server(ip="192.168.1.11", port=20070, timeout=1, name="Frame Sender")
-out_sock_disc = Server(ip="192.168.1.11", port=20029, timeout=10, name="Discrete")
+out_sock_frame = Server(ip="192.168.43.208", port=20070, timeout=1, name="Frame Sender")
 
 current_v_length = 5
 
 computer_vision_frontal_instance = None
 to_send_dist_angle = None
 
-def f_update():
+def update_all():
     while True:
-        out_sock_frame.send_frame(computer_vision_frontal_instance.frame_to_send)
+        out_sock_frame.send_frame({"F": computer_vision_frontal_instance.frame_to_send,
+                                   "D": to_send_dist_angle.append(current_v_length)})
         time.sleep(0.01)
-
-
-def d_update():
-    while True:
-        print(f"Discrete will send: {to_send_dist_angle.append(current_v_length)}")
-        out_sock_disc.update_to_send(to_send_dist_angle.append(current_v_length))
-        time.sleep(0.3)
-
 
 if __name__ == "__main__":
     '''
@@ -45,18 +37,13 @@ if __name__ == "__main__":
     - send discrete from Cv_obj's attributes {angle_to_send} to measurement module
     - send frame from Cv_obj's attributes {frame_to_send} to outer machine
     '''
-    t_send_disc = Thread(target=out_sock_disc.send, args=[], daemon=True)
-    t_send_disc.start()
 
     computer_vision_frontal_instance = ComputerVisionFrontal()
     # CV model run front in thread
     t_cv_front = Thread(target=computer_vision_frontal_instance.run_front, args=[], daemon=True)
 
-    t_update_f = Thread(target=f_update, args=[], daemon=True)
+    t_update_f = Thread(target=update_all, args=[], daemon=True)
     t_update_f.start()
-
-    t_update_d = Thread(target=d_update, args=[], daemon=True)
-    t_update_d.start()
 
     servo_obj_list = [Angles(servo_pin=11), Angles(servo_pin=12), Angles(servo_pin=13)]
     us_obj_list = [Measure(trig=22, echo=23), Measure(trig=24, echo=25), Measure(trig=26, echo=27)]

@@ -10,19 +10,11 @@ from cv_algorithm.back_computer_vision_app import ComputerVisionBackApp
 from Tools.Test_Measure_app_Front import *
 from mathematics.mathlib import *
 
-#implemented internally in CV_back_app
-# out_sock_frame = Client(ip="192.168.1.11", port=10080)
-out_sock_disc = Client(ip="192.168.1.11", port=20029)
+received_frames_sock = Client("192.168.43.208", 20070)
 
 # instance for run ComputerVisionFrontal class
 computer_vision_back_instance = None
 received = None
-
-def d_receive():
-    while True:
-        received = out_sock_disc.recv_discrete()
-        print(f"> received: {received}")
-        time.sleep(0.2)
 
 
 if __name__ == "__main__":
@@ -39,17 +31,18 @@ if __name__ == "__main__":
     servo_obj = Angles(servo_pin=11)
     us_obj = Measure(trig=22, echo=23)
 
-    t_disc = Thread(target=d_receive, args=[], daemon=True)
-    t_disc.start()
-
-    computer_vision_back_instance = ComputerVisionBackApp()
+    computer_vision_back_instance = ComputerVisionBackApp(width=1440, height=900)
 
     # CV model run front in thread
     t_cv_back = Thread(target=computer_vision_back_instance.run_back, args=[], daemon=True)
     t_cv_back.start()
 
     while True:
+        received = received_frames_sock.receive_all(1024)
+        #Update frames which is received from socet.
+        computer_vision_back_instance.current_streamed_frame = received["F"]
+        print(f"Data: \n{received['F']}")
         # abs_dist = math_model(data=discrete[0], vehicle_length=discrete[1],
         #                       direct_distance=us_obj.distance_read(), theta=90)
         # print(f"Absolute Distances: {abs_dist}")
-        time.sleep(1)
+        time.sleep(0.05)

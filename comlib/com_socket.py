@@ -153,11 +153,10 @@ class Client:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connected = False
         self.created = True
-        self.to_send = "initial..."
         self.data = b""
         self.payload_size = struct.calcsize("Q")
         self.data_recv = 0
-        self.last_received_frame = None
+        self.last_received_data = None
         return self.created
 
     def recv(self, size):
@@ -168,7 +167,7 @@ class Client:
         if self.connected:
             return self.s.recv(size)
 
-    def receive_frame(self, size):
+    def receive_all(self, size):
 
         """ Will be received from Socket"""
         while not self.connected:
@@ -186,13 +185,11 @@ class Client:
                 msg_size = struct.unpack("Q", packed_msg_size)[0]
                 while len(self.data) < msg_size:
                     self.data += self.recv(4*size)
-                frame_data = self.data[:msg_size]
+                encoded_data = self.data[:msg_size]
                 self.data = self.data[msg_size:]
-                frame = pickle.loads(frame_data)
-                key = cv2.waitKey(1) & 0xFF
-                self.last_received_frame = frame
-                cv2.imshow("SOCK_RECEIVING VIDEO", frame)
-                return frame
+                decoded_data = pickle.loads(encoded_data)
+                self.last_received_data = decoded_data
+                return decoded_data
 
             except Exception:
                 self.connected = False
@@ -203,7 +200,7 @@ class Client:
                 self.recreate()
                 time.sleep(0.5)
 
-        return self.last_received_frame
+        return self.last_received_data
 
     def recv_discrete(self):
         """

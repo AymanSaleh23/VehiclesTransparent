@@ -9,7 +9,7 @@ DEF_FLOAT = 0.0
 DEF_TXT = ''
 CONFIDENCE_THRESHOLD = 0.6
 RECEIVED_FRAME_PORT = 20070
-FRAME_SOURCE_IP = '192.168.1.11'
+FRAME_SOURCE_IP = '192.168.43.208'
 CURRENT_MACHINE_FRAME_SOURCE = "video2.mp4"
 
 # Object Detection Class
@@ -106,7 +106,10 @@ class ComputerVisionBackApp:
         self.periodic_timer = DEF_VAL
         # Flag To Run Detection For The First Frame
         self.is_first_frame = True
-        self.streamed_data = None
+
+        #TO_DO: Valeo Icon/Logo as a default pic.
+        self.current_streamed_frame = None
+        self.last_streamed_frame = None
         # Selecting the center for ROI 'region of interest',and its left and right distance.
         self.C_X, self.C_Y, self.tolerance = int(self.width / 2), int(self.height / 2), 120
 
@@ -115,7 +118,6 @@ class ComputerVisionBackApp:
         self.ot = ObjectTracking()
         self.front_vehicle_center = self.width / 2
         # received_video = cv2.VideoCapture(0)
-        self.received_frames_sock = com_socket.Client(FRAME_SOURCE_IP, RECEIVED_FRAME_PORT)
 
     def run_back(self, timer_limit=100):
         # periodic timer To make a new detection
@@ -145,8 +147,7 @@ class ComputerVisionBackApp:
 
             else:
                 # read received Video
-                received_frame = self.received_frames_sock.receive_frame(1024)
-                self.streamed_data = received_frame
+                pass
 
             # Adjust ROI 'Region of interest'
             # ROI bounding Box
@@ -217,7 +218,7 @@ class ComputerVisionBackApp:
                 ok, bbox = self.ot.update_track(roi_frame)
 
                 # Calculate Frames per second (FPS)
-                fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
+                self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
 
                 # Tracking success
                 if ok:
@@ -238,17 +239,17 @@ class ComputerVisionBackApp:
                     print('########################################## tracking_area SHAPE : ', self.tracking_area.shape)
                     # Resize the streamedData
                     if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
-                        self.streamed_data = None
+                        self.last_streamed_frame = None
                     else:
                         try:
-                            self.streamed_data = cv2.resize(self.streamed_data,
-                                                            (self.tracking_area.shape[1], self.tracking_area.shape[0]))
+                            self.last_streamed_frame = cv2.resize(self.last_streamed_frame,
+                                                                  (self.tracking_area.shape[1], self.tracking_area.shape[0]))
                             print('########################################### streamed Data SHAPE : ',
-                                  self.streamed_data.shape)
+                                  self.last_streamed_frame.shape)
                             # The next instruction will put the streamed frame on the tracked car frame.
                             # In Future plans we cane use image blending or image superimposing concepts.
                             roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
-                                self.streamed_data if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
+                                self.last_streamed_frame if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
                                 else None
                         except Exception:
                             print("Frame have no Size to reshape")
@@ -261,7 +262,7 @@ class ComputerVisionBackApp:
             cv2.putText(frame, "{} {}".format("Frame NO : ", self.periodic_timer), (23, 50), cv2.FONT_HERSHEY_PLAIN,
                         2, (0, 255, 255), 2)
             # Display FPS on frame
-            cv2.putText(frame, "FPS : " + str(int(fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
+            cv2.putText(frame, "FPS : " + str(int(self.fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
             cv2.imshow('Back View', frame)
             #cv2.imshow('Streamed Data', received_frame)
             #cv2.imshow("Tracking_area", self.tracking_area)
@@ -271,5 +272,7 @@ class ComputerVisionBackApp:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             time.sleep(0.01)
+            cv2.imshow("SOCK_RECEIVING VIDEO", self.last_streamed_frame)
+            self.last_streamed_frame = self.current_streamed_frame
         video.release()
         cv2.destroyAllWindows()
