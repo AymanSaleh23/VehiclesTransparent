@@ -17,15 +17,16 @@ def call_back():
 class Gui:
     def __init__(self):
         # create main window and set title and back ground
-        main_window = Tk()
-        main_window.title("Front car")
-        main_window.geometry("1500x850")
-        main_window.configure(background="#73dfed")
-        main_window.attributes("-fullscreen", True)
-        main_window.resizable(0, 0)
+        self.main_window = Tk()
+        self.main_window.title("Front car")
+        self.main_window.geometry("1500x850")
+        self.main_window.configure(background="#73dfed")
+        self.main_window.attributes("-fullscreen", True)
+        self.main_window.resizable(0, 0)
+        self.main_window.config(cursor="none")
 
         image = ImageTk.PhotoImage(file='photo.png')
-        canvas = Canvas(main_window, width=1000, height=850)
+        canvas = Canvas(self.main_window, width=1000, height=850)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
         canvas.create_image(0, 0, image=image, anchor="nw")
@@ -41,10 +42,15 @@ class Gui:
         style.map('TButton', foreground=[('active', 'green')], background=[('active', "green")])
 
         # create Xtra vue button
-        xtra_vue_button = Button(main_window, text="XtraVue", command=call_back, width=13)
+        xtra_vue_button = Button(self.main_window, text="XtraVue", command=self.call_back, width=13)
         xtra_vue_button.place(relx=.75, rely=.52, anchor="center")
 
-        main_window.mainloop()
+        self.main_window.mainloop()
+        
+    def call_back(self):
+        print("hello world")
+        # os.system('python main.py')
+        #self.main_window.destroy()
 
 
 gui = Gui()
