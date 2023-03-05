@@ -1,9 +1,7 @@
-import cv2
 import sys
-import torch
 
-import mathematics.mathlib
-from comlib import com_socket
+import cv2
+import torch
 
 DEF_VAL = 0
 DEF_FLOAT = 0.0
@@ -11,7 +9,7 @@ DEF_TXT = ''
 CONFIDENCE_THRESHOLD = 0.65
 RECEIVED_FRAME_PORT = 10080
 FRAME_SOURCE_IP = '192.168.1.11'
-CURRENT_MACHINE_FRAME_SOURCE = "video5.mp4"
+CURRENT_MACHINE_FRAME_SOURCE = "rear_1.mp4"
 
 
 # Object Detection Class
@@ -26,6 +24,7 @@ class SingleCardDetection:
         # To detect specific categories, 2: car,5: bus,7: truck ,for more categories
         # 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml'
         self.model.classes = [2, 5, 7]
+
         # Reject any predictions with less than 60% confidence
         self.threshold = CONFIDENCE_THRESHOLD
 
@@ -64,19 +63,42 @@ class SingleCardDetection:
 
 
 class ComputerVisionBackAppWithoutTracking:
-    def __init__(self, width=1000, height=700):
+    def __init__(self, width=1440, height=900):
         # Some Initial  Parameters
         # ReSize the Frame
         self.width, self.height = width, height
+        self.opacity = 0.2
+        self.width_ratio, self.height_ratio = 0.15, 0.3
         # Initialize The x1,y1,x2,y2,text,conf,bbox
         self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.area, self.bbox, self.fps = 0, 0, 0, 0, '', 0, 0, 0, 0
         self.streamed_data = None
         # Selecting the center for ROI 'region of interest',and its left and right distance.
-        self.C_X, self.C_Y, self.tolerance = int(self.width / 2), int(self.height / 2), 120
+        self.C_X, self.C_Y, self.tolerance = int(self.width / 2), int(self.height / 3), int(self.width / 6)
 
         # Detection And Tracking Instances
         self.od = SingleCardDetection()
         self.front_vehicle_center = self.width / 2
+
+    def video_filling_coordinates(self, x1, y1, x2, y2, detected_car_width, detected_car_height):
+        x1 = round(x1 + detected_car_width * self.width_ratio)
+        y1 = round(y1 + detected_car_height * self.height_ratio)
+        x2 = round(x2 - detected_car_width * self.width_ratio)
+        y2 = round(y2 - detected_car_height * self.height_ratio)
+        return x1, y1, x2, y2
+
+    # def crop_and_resize_streamed_video(self, streamed_data):
+    #     x1, y1, x2, y2 = 1, 1, streamed_data.shape[1], streamed_data.shape[0]
+    #     x1 = round(x1 + x2 * self.width_ratio)  # 96
+    #     y1 = round(y1 + y2 * self.height_ratio)  # 324
+    #     x2 = round(x2 - x2 * self.width_ratio)  # 1824
+    #     y2 = round(y2 - y2 * self.height_ratio)  # 756
+    #     streamed_data = streamed_data[y1:y2, x1: x2]
+
+    def crop_and_resize_streamed_video(self, streamed_data):
+        x1, y1, x2, y2 = 1, 1, streamed_data.shape[1], streamed_data.shape[0]
+        y1 = round(y2 * 0.5)
+        streamed_data = streamed_data[y1:y2, x1: x2]
+        return streamed_data
 
     def run_back(self):
 
@@ -131,12 +153,26 @@ class ComputerVisionBackAppWithoutTracking:
                     ROI_Frame)  # detecting a car in ROI
                 detected_car_width = round(abs(self.x2 - self.x1))
                 detected_car_height = round(abs(self.y2 - self.y1))
+                self.x1, self.y1, self.x2, self.y2 = self.video_filling_coordinates(
+                    self.x1, self.y1,
+                    self.x2, self.y2,
+                    detected_car_width,
+                    detected_car_height)
+
+                detected_car_width = round(abs(self.x2 - self.x1))
+                detected_car_height = round(abs(self.y2 - self.y1))
                 # Fill Streamed Video
                 if self.area != 0:
-                    self.streamed_data = cv2.resize(self.streamed_data, (detected_car_width, detected_car_height))
-                    ROI_Frame[self.y1: self.y2, self.x1: self.x2] = cv2.addWeighted(
-                        ROI_Frame[self.y1: self.y2, self.x1: self.x2], 0.4, self.streamed_data, 0.6, 0)
+                    print("streamed_data Shape : ", self.streamed_data.shape)
+                    # crop the streamed_data Video and resize it over the cropped detected car
+                    self.streamed_data = self.crop_and_resize_streamed_video(self.streamed_data)
 
+                    self.streamed_data = cv2.resize(self.streamed_data, (detected_car_width, detected_car_height))
+
+                    ROI_Frame[self.y1: self.y2, self.x1: self.x2] = cv2.addWeighted(
+                        ROI_Frame[self.y1: self.y2, self.x1: self.x2], self.opacity, self.streamed_data,
+                        1 - self.opacity, 0)
+                    # ROI_Frame[self.y1: self.y2, self.x1: self.x2] =  self.streamed_data
                 cv2.rectangle(ROI_Frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255, 255), 1)
                 self.x1, self.y1, self.x2, self.y2, self.text, self.area = 0, 0, 0, 0, '', 0
                 self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)  # Calculate Frames per second (FPS)
