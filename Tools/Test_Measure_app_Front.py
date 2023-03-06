@@ -3,7 +3,7 @@ class Angles:
         print(f"init Angle: {servo_pin}")
 
     def set_angle(self, angle):
-        print(f"angle to set {angle}")
+        print(f"angle to set {angle}", end=", ")
 
 
 class Measure:
@@ -13,5 +13,5 @@ class Measure:
     def distance_read(self):
         from random import randint
         ran = randint(0, 34)
-        print(f"r_distance: {ran}")
+        print(f"r_distance: {ran}", end=", ")
         return ran

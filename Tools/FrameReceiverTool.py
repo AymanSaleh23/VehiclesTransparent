@@ -11,7 +11,7 @@ client_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 host_name  = socket.gethostname()
 host_ip = socket.gethostbyname(host_name)
 
-port = 10080 # Port to listen on (non-privileged ports are > 1023)
+port = 20070 # Port to listen on (non-privileged ports are > 1023)
 # now connect to the web server on the specified port number
 client_socket.connect((host_ip,port)) 
 #'b' or 'B'produces an instance of the bytes type instead of the str type
@@ -33,7 +33,7 @@ while True:
     frame_data = data[:msg_size]
     data  = data[msg_size:]
     frame = pickle.loads(frame_data)
-    cv2.imshow("Receiving...",frame)
+    cv2.imshow("Receiving...",frame["F"])
     key = cv2.waitKey(10) 
     if key  == 13:
         break
