@@ -25,6 +25,7 @@ class Gui:
         self.main_window.attributes("-fullscreen", True)
         self.main_window.resizable(0, 0)
         self.main_window.config(cursor="none")
+        self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
 
 
 
@@ -38,14 +39,16 @@ class Gui:
         page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Back car ', background="#AFD1EE")
         page_address.place(relx=.5, rely=.02, anchor="center")
 
-        # configure style for button
-        style = Style()
-        style.configure('TButton', font=('calibre',34, 'bold'),height=700, width=20,borderwidth='5', background="#AFD1EE",foreground="#2196C1")
-        style.map('TButton', foreground=[('active', 'green')],background=[('active', "green")])
+        # # configure style for button
+        # style = Style()
+        # style.configure('TButton', font=('calibre',34, 'bold'),height=700, width=20,borderwidth='5', background="#AFD1EE",foreground="#2196C1")
+        # style.map('TButton', foreground=[('active', 'green')],background=[('active', "green")])
+        #
+        # # create Xtra vue button
+        # xtra_vue_button = Button(self.main_window, text="XtraVue", command=self.call_back,width=13)
+        # xtra_vue_button.place(relx=.75, rely=.52, anchor="center")
 
-        # create Xtra vue button
-        xtra_vue_button = Button(self.main_window, text="XtraVue", command=self.call_back,width=13)
-        xtra_vue_button.place(relx=.75, rely=.52, anchor="center")
+
         self.main_window.mainloop()
 
     # call back function to do action for button
@@ -53,6 +56,12 @@ class Gui:
         print("hello world")
         # os.system('python main.py')
         #self.main_window.destroy()
+    def call_back_click_event(self,event):
+        print('hello world')
+        page_address = Label(font=('vendor', 28, 'bold'), text='system run', background="#AFD1EE")
+        page_address.place(relx=.5, rely=.25, anchor="center")
+        # os.system('python main.py')
+        # self.main_window.destroy()
 
 
 
