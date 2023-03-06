@@ -1,7 +1,7 @@
 from comlib.com_socket import Server
 import cv2, pickle, struct
 
-s = Server("192.168.1.11", 10050)
+s = Server("127.0.0.1", 10050)
 
 vid = cv2.VideoCapture(0)
 while(vid.isOpened()):

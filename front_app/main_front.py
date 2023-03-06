@@ -21,12 +21,12 @@ out_sock_frame = Server(ip="192.168.1.11", port=20070, timeout=1, name="Frame Se
 current_v_length = 5
 
 computer_vision_frontal_instance = None
-to_send_fd = DataHolder()
 
-def update_all():
+
+def update_all(send_fd):
     while True:
-        to_send = {"F": to_send_fd.get_frame(),
-                   "D": to_send_fd.get_discrete()}
+        to_send = {"F": send_fd.get_frame(),
+                   "D": send_fd.get_discrete()}
         print(f'to send: {to_send["D"]}')
         out_sock_frame.send_frame(to_send)
         time.sleep(0.01)
@@ -39,12 +39,12 @@ if __name__ == "__main__":
     - send discrete from Cv_obj's attributes {angle_to_send} to measurement module
     - send frame from Cv_obj's attributes {frame_to_send} to outer machine
     '''
-
+    to_send_fd = DataHolder()
     computer_vision_frontal_instance = ComputerVisionFrontal()
     # CV model run front in thread
     t_cv_front = Thread(target=computer_vision_frontal_instance.run_front, args=[], daemon=True)
 
-    t_update_f = Thread(target=update_all, args=[], daemon=True)
+    t_update_f = Thread(target=update_all, args=[to_send_fd], daemon=True)
     t_update_f.start()
 
     servo_obj_list = [Angles(servo_pin=11), Angles(servo_pin=12), Angles(servo_pin=13)]
@@ -68,8 +68,13 @@ if __name__ == "__main__":
 
         print(f"dist_list: {dist_list}")
         print(f"to_send_fd.get_discrete(): {to_send_fd.get_discrete()}")
-
-        to_send_fd.set_discrete([[dist_list[i], cv_angle_list[i]] for i in range(0, 3)].append(current_v_length))
+        disc = [[dist_list[i], cv_angle_list[i]] for i in range(0, 3)]
+        print(f'APP: to send: {to_send_fd.get_discrete()}')
+        print(f'APP: disc: {disc}')
+        print(f'APP: disc.append(current_v_length): {disc.append(current_v_length)}')
+        # to_send_fd.set_discrete([ [dist_list[i], cv_angle_list[i]] for i in range(0, 3)].append(current_v_length))
+        to_send_fd.set_discrete(disc)
+        print(f'APP: to send: {to_send_fd.get_discrete()}')
         to_send_fd.set_frame(computer_vision_frontal_instance.frame_to_send)
 
         time.sleep(0.3)
