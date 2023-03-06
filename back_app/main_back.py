@@ -17,6 +17,7 @@ computer_vision_back_instance = None
 received_frame = None
 received_discrete = None
 received_fd = DataHolder()
+direct_distance = None
 
 if __name__ == "__main__":
     '''
@@ -44,10 +45,20 @@ if __name__ == "__main__":
             # Update frames which is received from socket.
             computer_vision_back_instance.current_streamed_frame = received_frame
             received_fd.set_frame(received_frame)
+
         if received_discrete is not None:
             received_fd.set_discrete(received_discrete)
-            print(f'Data: \n{received_fd.get_discrete()}')
-        # abs_dist = math_model(data=discrete[0], vehicle_length=discrete[1],
-        #                       direct_distance=us_obj.distance_read(), theta=90)
-        # print(f"Absolute Distances: {abs_dist}")
-        time.sleep(0.05)
+
+        if type(computer_vision_back_instance.front_vehicle_center) is list:
+            direct_distance = us_obj.distance_read()
+            abs_dist = math_model(data=received_fd.get_discrete()[0],
+                                  vehicle_length=received_fd.get_discrete()[1],
+                                  direct_distance=direct_distance,
+                                  theta=computer_vision_back_instance.front_vehicle_center[0])
+            print(f"Front Vehicle Center: {computer_vision_back_instance.front_vehicle_center[0]}")
+            print(f"Absolute Distances: {abs_dist}")
+
+        print(f"received_fd.get_discrete(): {received_fd.get_discrete()}")
+        print(f'Data: \n{received_fd.get_discrete()}')
+        time.sleep(0.01)
+        received_fd.reset_discrete()

@@ -27,7 +27,6 @@ def update_all(send_fd):
     while True:
         to_send = {"F": send_fd.get_frame(),
                    "D": send_fd.get_discrete()}
-        print(f'to send: {to_send["D"]}')
         out_sock_frame.send_frame(to_send)
         time.sleep(0.01)
 
@@ -57,7 +56,6 @@ if __name__ == "__main__":
 
     while True:
         cv_angle_list = computer_vision_frontal_instance.angle_to_send
-        print(f"Angle List received: {cv_angle_list}")
         if computer_vision_frontal_instance.angle_to_send is None:
             cv_angle_list = [45, 90, 135]
 
@@ -66,15 +64,9 @@ if __name__ == "__main__":
             servo_obj_list[section].set_angle(cv_angle_list[section])
             dist_list[section] = us_obj_list[section].distance_read()
 
-        print(f"dist_list: {dist_list}")
-        print(f"to_send_fd.get_discrete(): {to_send_fd.get_discrete()}")
-        disc = [[dist_list[i], cv_angle_list[i]] for i in range(0, 3)]
-        print(f'APP: to send: {to_send_fd.get_discrete()}')
-        print(f'APP: disc: {disc}')
-        print(f'APP: disc.append(current_v_length): {disc.append(current_v_length)}')
-        # to_send_fd.set_discrete([ [dist_list[i], cv_angle_list[i]] for i in range(0, 3)].append(current_v_length))
+        disc = [[[dist_list[i], cv_angle_list[i]] for i in range(0, 3)], current_v_length]
         to_send_fd.set_discrete(disc)
-        print(f'APP: to send: {to_send_fd.get_discrete()}')
         to_send_fd.set_frame(computer_vision_frontal_instance.frame_to_send)
 
-        time.sleep(0.3)
+        print(f'APP: to send: {to_send_fd.get_discrete()}')
+        time.sleep(0.02)

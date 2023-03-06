@@ -189,7 +189,7 @@ class Client:
                 encoded_data = self.data[:msg_size]
                 self.data = self.data[msg_size:]
                 decoded_data = pickle.loads(encoded_data)
-                print(f'decoded_data["D"]: {decoded_data["D"]}')
+                # print(f'decoded_data["D"]: {decoded_data["D"]}')
                 # self.last_received_data = decoded_data["F"], decoded_data["D"]
                 return decoded_data["F"], decoded_data["D"]
 
@@ -283,4 +283,5 @@ class DataHolder:
     def set_discrete(self, discrete):
         self.discrete = discrete
 
-
+    def reset_discrete(self):
+        self.discrete = [[[-1, 45], [-1, 90], [-1, 135]], -1]
