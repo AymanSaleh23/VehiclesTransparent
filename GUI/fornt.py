@@ -26,7 +26,7 @@ class Gui:
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
 
-        image = ImageTk.PhotoImage(file='photo.png')
+        image = ImageTk.PhotoImage(file='D:\GP\code\VehiclesTransparent\GUI\photo.png')
         canvas = Canvas(self.main_window, width=1000, height=850)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
