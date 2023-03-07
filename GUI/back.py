@@ -1,23 +1,18 @@
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
-
-
-import os
+import sys
+sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
+from back_app.main_back import BackMode
 
 '''
   GUI file to fire back car system 
 '''
 
 
-
-
-
-
-
 class Gui:
     def __init__(self):
-        # create main window and set title and back ground
+        # create main window and set title and background
         self.main_window = Tk()
         self.main_window.title("Back car")
         self.main_window.geometry("1500x850")
@@ -27,9 +22,7 @@ class Gui:
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
 
-
-
-        image = ImageTk.PhotoImage(file='photo.png')
+        image = ImageTk.PhotoImage(file='D:\GP\code\VehiclesTransparent\GUI\photo.png')
         canvas = Canvas(self.main_window, width=1920, height=1080)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
@@ -38,32 +31,14 @@ class Gui:
         # create label for page address
         page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Back car ', background="#AFD1EE")
         page_address.place(relx=.5, rely=.02, anchor="center")
-
-        # # configure style for button
-        # style = Style()
-        # style.configure('TButton', font=('calibre',34, 'bold'),height=700, width=20,borderwidth='5', background="#AFD1EE",foreground="#2196C1")
-        # style.map('TButton', foreground=[('active', 'green')],background=[('active', "green")])
-        #
-        # # create Xtra vue button
-        # xtra_vue_button = Button(self.main_window, text="XtraVue", command=self.call_back,width=13)
-        # xtra_vue_button.place(relx=.75, rely=.52, anchor="center")
-
-
         self.main_window.mainloop()
 
-    # call back function to do action for button
-    def call_back(self):
-        print("hello world")
-        # os.system('python main.py')
-        #self.main_window.destroy()
-    def call_back_click_event(self,event):
-        print('hello world')
+    # call back function to do action for binding on mouse click
+    def call_back_click_event(self, event):
         page_address = Label(font=('vendor', 28, 'bold'), text='system run', background="#AFD1EE")
         page_address.place(relx=.5, rely=.25, anchor="center")
-        # os.system('python main.py')
-        # self.main_window.destroy()
-
-
-
+        self.main_window.destroy()
+        bm = BackMode()
+        bm()
 
 gui = Gui()

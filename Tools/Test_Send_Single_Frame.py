@@ -7,4 +7,4 @@ vid = cv2.VideoCapture(0)
 
 while True:
     img, frame = vid.read()
-    serv.send_frame(frame)
+    serv.send_all(frame)
