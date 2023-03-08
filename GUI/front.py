@@ -39,11 +39,11 @@ class Gui:
 
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
-        while self.fm.data_sock_send.connect_mechanism():
-            if self.fm.data_sock_send.connected:
-                self.main_window.destroy()
-                self.fm()
-                time.sleep(0.5)
-        self.__init__()
+        if self.fm.data_sock_send.connect_mechanism():
+        # if self.fm.data_sock_send.connected:
+            self.main_window.destroy()
+            self.fm()
+            time.sleep(0.5)
+            self.__init__()
 
 gui = Gui()
