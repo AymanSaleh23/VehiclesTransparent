@@ -1,13 +1,12 @@
-import time
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
-import sys
+import sys, time
 sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
-from back_app.main_back import BackMode
+from front_app.main_front import FrontMode
 
 '''
-  GUI file to fire back car system 
+  GUI file to fire front car system 
 '''
 
 
@@ -15,7 +14,7 @@ class Gui:
     def __init__(self):
         # create main window and set title and background
         self.main_window = Tk()
-        self.main_window.title("Back car")
+        self.main_window.title("Front car")
         self.main_window.geometry("1500x850")
         self.main_window.configure(background="#73dfed")
         self.main_window.attributes("-fullscreen", True)
@@ -24,27 +23,27 @@ class Gui:
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
 
         image = ImageTk.PhotoImage(file='D:\GP\code\VehiclesTransparent\GUI\photo.png')
-        canvas = Canvas(self.main_window, width=1920, height=1080)
+        canvas = Canvas(self.main_window, width=1000, height=850)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
         canvas.create_image(0, 0, image=image, anchor="nw")
 
         # create label for page address
-        page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Back car ', background="#AFD1EE")
-        page_address.place(relx=.5, rely=.02, anchor="center")
+        self.page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Front car ', background="#AFD1EE")
+        self.page_address.place(relx=.5, rely=.02, anchor="center")
 
-        self.connection_status = Label(font=('vendor', 28, 'bold'), text='Request A Connection', background="#AFD1EE")
+        self.connection_status = Label(font=('vendor', 28, 'bold'), text='Idle', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.bm = BackMode(timeout=4)
+        self.fm = FrontMode(timeout=3)
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
-        if self.bm.data_sock_receive.connect_mechanism():
+        if self.fm.data_sock_send.connect_mechanism():
+        # if self.fm.data_sock_send.connected:
             self.main_window.destroy()
-            self.bm()
+            self.fm()
             time.sleep(0.5)
             self.__init__()
-
 
 gui = Gui()

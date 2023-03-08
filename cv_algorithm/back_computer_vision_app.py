@@ -8,8 +8,6 @@ DEF_VAL = 0
 DEF_FLOAT = 0.0
 DEF_TXT = ''
 CONFIDENCE_THRESHOLD = 0.6
-RECEIVED_FRAME_PORT = 20070
-FRAME_SOURCE_IP = '192.168.43.208'
 CURRENT_MACHINE_FRAME_SOURCE = "video2.mp4"
 
 # Object Detection Class
@@ -119,7 +117,7 @@ class ComputerVisionBackApp:
         self.front_vehicle_center = self.width / 2
         # received_video = cv2.VideoCapture(0)
 
-    def run_back(self, timer_limit=100):
+    def run_back(self, sock, timer_limit=100):
         # periodic timer To make a new detection
         self.timer_limit = timer_limit
         # Flag To Run Detection After timerLimit times
@@ -133,7 +131,7 @@ class ComputerVisionBackApp:
             print("Could not open video")
             sys.exit()
 
-        while True:
+        while sock.connect_mechanism():
             # read Frame by frame
             ok, frame = video.read()
             # Resize the Frame
