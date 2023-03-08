@@ -1,3 +1,4 @@
+import time
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
@@ -31,14 +32,20 @@ class Gui:
         # create label for page address
         page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Back car ', background="#AFD1EE")
         page_address.place(relx=.5, rely=.02, anchor="center")
+
+        self.connection_status = Label(font=('vendor', 28, 'bold'), text='Request A Connection', background="#AFD1EE")
+        self.connection_status.place(relx=.5, rely=.25, anchor="center")
+        self.bm = BackMode(timeout=4)
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
-        page_address = Label(font=('vendor', 28, 'bold'), text='system run', background="#AFD1EE")
-        page_address.place(relx=.5, rely=.25, anchor="center")
-        self.main_window.destroy()
-        bm = BackMode()
-        bm()
+        while self.bm.data_sock_receive.connect_mechanism():
+            if self.bm.data_sock_receive.connected:
+                self.main_window.destroy()
+                self.bm()
+                time.sleep(0.5)
+        self.__init__()
+
 
 gui = Gui()

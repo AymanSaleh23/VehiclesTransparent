@@ -117,7 +117,7 @@ class ComputerVisionBackApp:
         self.front_vehicle_center = self.width / 2
         # received_video = cv2.VideoCapture(0)
 
-    def run_back(self, timer_limit=100):
+    def run_back(self, sock, timer_limit=100):
         # periodic timer To make a new detection
         self.timer_limit = timer_limit
         # Flag To Run Detection After timerLimit times
@@ -131,7 +131,7 @@ class ComputerVisionBackApp:
             print("Could not open video")
             sys.exit()
 
-        while True:
+        while sock.connect_mechanism():
             # read Frame by frame
             ok, frame = video.read()
             # Resize the Frame

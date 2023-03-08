@@ -40,20 +40,21 @@ class Server:
         return self.created
 
     def connect_mechanism(self, s_sock_name="Frame"):
-        print(f"Socket: {s_sock_name}")
-        try:
+        if not self.connected:
+            print(f"Socket: {s_sock_name}")
+            try:
 
-            self.s.settimeout(self.timeout)
-            self.client_socket, self.addr = self.s.accept()
-            self.connected = True
-            print(f'Server {s_sock_name} Socket Successful Connection from: {self.addr}')
+                self.s.settimeout(self.timeout)
+                self.client_socket, self.addr = self.s.accept()
+                self.connected = True
+                print(f'Server {s_sock_name} Socket Successful Connection from: {self.addr}')
 
-        except Exception:
-            #   A debug print to console informs that an exception occurred
-            print(f"> Server {s_sock_name} Socket Connection Error.")
-            #   Simple wait for speed down the execution (optional and will be deleted in future)
-            self.connected = False
-            time.sleep(0.1)
+            except Exception:
+                #   A debug print to console informs that an exception occurred
+                print(f"> Server {s_sock_name} Socket Connection Error.")
+                #   Simple wait for speed down the execution (optional and will be deleted in future)
+                self.connected = False
+                time.sleep(0.1)
         return self.connected
 
     def send_all(self, dict_to_send):
@@ -147,6 +148,7 @@ class Client:
                 print(f"> Client {r_sock_tye} Socket Connection Error.")
                 self.connected = False
                 time.sleep(0.1)
+        return self.connected
 
 
 class DataHolder:

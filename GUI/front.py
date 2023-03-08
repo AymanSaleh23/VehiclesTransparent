@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
-import sys
+import sys, time
 sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
 from front_app.main_front import FrontMode
 
@@ -29,19 +29,21 @@ class Gui:
         canvas.create_image(0, 0, image=image, anchor="nw")
 
         # create label for page address
-        page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Front car ', background="#AFD1EE")
-        page_address.place(relx=.5, rely=.02, anchor="center")
+        self.page_address = Label(font=('vendor', 28, 'bold'), text=' V2V Front car ', background="#AFD1EE")
+        self.page_address.place(relx=.5, rely=.02, anchor="center")
 
+        self.connection_status = Label(font=('vendor', 28, 'bold'), text='Idle', background="#AFD1EE")
+        self.connection_status.place(relx=.5, rely=.25, anchor="center")
+        self.fm = FrontMode(timeout=3)
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
-        print('hello world')
-        page_address = Label(font=('vendor', 28, 'bold'), text='system run', background="#AFD1EE")
-        page_address.place(relx=.5, rely=.25, anchor="center")
-        self.main_window.destroy()
-        fm = FrontMode()
-        fm()
-
+        while self.fm.data_sock_send.connect_mechanism():
+            if self.fm.data_sock_send.connected:
+                self.main_window.destroy()
+                self.fm()
+                time.sleep(0.5)
+        self.__init__()
 
 gui = Gui()

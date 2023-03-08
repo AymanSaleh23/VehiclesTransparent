@@ -5,6 +5,7 @@ import cv2
 import torch
 
 from mathematics.mathlib import map_values_ranges
+from comlib.com_socket import *
 
 TOP_LEFT_X = 'xmin'
 TOP_LEFT_Y = 'ymin'
@@ -140,7 +141,7 @@ class ComputerVisionFrontal:
         # Read video
         self.video = cv2.VideoCapture("video2.mp4")  # CAMERA - RECORDED VIDEO - SIMULATION
 
-    def run_front(self):
+    def run_front(self, sock):
 
         # Exit if video not opened.
         if not self.video.isOpened():
@@ -149,7 +150,7 @@ class ComputerVisionFrontal:
             self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
             sys.exit()
 
-        while True:
+        while sock.connect_mechanism():
             # Read Frame by frame
             ok, frame = self.video.read()
             frame = cv2.resize(frame, (self.width, self.height))  # Resize the Frame

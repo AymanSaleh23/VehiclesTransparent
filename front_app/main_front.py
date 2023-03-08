@@ -25,21 +25,25 @@ class FrontMode:
         '''
         # instance for run ComputerVisionFrontal class
         self.ip, self.port, self.timeout, self.name = ip, port, timeout, name
-        self.out_sock_frame = Server(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
+        self.data_sock_send = Server(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
         self.to_send_fd = DataHolder()
         self.computer_vision_frontal_instance = ComputerVisionFrontal()
         # CV model run front in thread
-        self.t_cv_front = Thread(target=self.computer_vision_frontal_instance.run_front, args=[], daemon=True)
-        self.t_update_f = Thread(target=self.update_all, args=[self.to_send_fd, self.out_sock_frame], daemon=True)
-        self.t_update_f.start()
+        self.t_cv_front = Thread(target=self.computer_vision_frontal_instance.run_front,
+                                 args=[self.data_sock_send], daemon=True)
+        self.t_update_f = Thread(target=self.update_all, args=[self.to_send_fd, self.data_sock_send], daemon=True)
         self.servo_obj_list = [Angles(servo_pin=11), Angles(servo_pin=12), Angles(servo_pin=13)]
         self.us_obj_list = [Measure(trig=22, echo=23), Measure(trig=24, echo=25), Measure(trig=26, echo=27)]
         self.dist_list = [0] * 3
         self.cv_angle_list = self.last_angle_values = [0] * 3
-        self.t_cv_front.start()
+        self.threads_activated = False
 
     def __call__(self):
-        while True:
+        while self.data_sock_send.connect_mechanism():
+            if not self.threads_activated:
+                self.threads_activated = True
+                self.t_update_f.start()
+                self.t_cv_front.start()
             self.cv_angle_list = self.computer_vision_frontal_instance.angle_to_send
             if self.computer_vision_frontal_instance.angle_to_send is None:
                 cv_angle_list = [45, 90, 135]
@@ -55,9 +59,10 @@ class FrontMode:
 
             print(f'APP: to send: {self.to_send_fd.get_discrete()}')
             time.sleep(0.02)
+        self.data_sock_send.s.close()
 
     def update_all(self, send_fd, data_sock):
-        while True:
+        while self.data_sock_send.connect_mechanism():
             to_send = {"F": send_fd.get_frame(),
                        "D": send_fd.get_discrete()}
             data_sock.send_all(to_send)

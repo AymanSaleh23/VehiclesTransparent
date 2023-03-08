@@ -12,7 +12,7 @@ from Tools.Test_Measure_app_Front import *
 from mathematics.mathlib import *
 
 class BackMode:
-    def __init__(self):
+    def __init__(self, ip="127.0.0.1", port=20070, timeout=1, name="Receive Socket"):
         '''
         - Create CV object.
         - Create one measurement unit.
@@ -20,9 +20,9 @@ class BackMode:
         - receive frame, discrete from Cv_obj's sockets (applied internally in CV_back_app)
         - read single distance
         - pass all parameters to mathematical model
-
         '''
-        self.received_frames_sock = Client("127.0.0.1", 20070, timeout=0.1)
+        self.ip, self.port, self.timeout, self.name = ip, port, timeout, name
+        self.data_sock_receive = Client(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
 
         # instance for run ComputerVisionFrontal class
         self.computer_vision_back_instance = None
@@ -37,12 +37,16 @@ class BackMode:
         self.computer_vision_back_instance = ComputerVisionBackApp(width=500, height=300)
 
         # CV model run front in thread
-        self.t_cv_back = Thread(target=self.computer_vision_back_instance.run_back, args=[], daemon=True)
-        self.t_cv_back.start()
+        self.t_cv_back = Thread(target=self.computer_vision_back_instance.run_back,
+                                args=[self.data_sock_receive], daemon=True)
+        self.threads_activated = False
 
     def __call__(self):
-        while True:
-            received_frame, received_discrete = self.received_frames_sock.receive_all(1024)
+        while self.data_sock_receive.connect_mechanism():
+            if not self.threads_activated:
+                self.threads_activated = True
+                self.t_cv_back.start()
+            received_frame, received_discrete = self.data_sock_receive.receive_all(1024)
             if received_frame is not None:
                 # Update frames which is received from socket.
                 self.computer_vision_back_instance.current_streamed_frame = received_frame
@@ -63,3 +67,4 @@ class BackMode:
             print(f'Data: \n{self.received_fd.get_discrete()}')
             time.sleep(0.01)
             self.received_fd.reset_discrete()
+        self.data_sock_receive.s.close()
