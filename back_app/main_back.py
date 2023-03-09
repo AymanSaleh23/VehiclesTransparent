@@ -34,7 +34,7 @@ class BackMode:
         self.servo_obj = Angles(servo_pin=11)
         self.us_obj = Measure(trig=22, echo=23)
 
-        self.computer_vision_back_instance = ComputerVisionBackApp(width=500, height=300)
+        self.computer_vision_back_instance = ComputerVisionBackApp(source="video2.mp4")
 
         # CV model run front in thread
         self.t_cv_back = Thread(target=self.computer_vision_back_instance.run_back,

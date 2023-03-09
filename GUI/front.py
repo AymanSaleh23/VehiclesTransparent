@@ -34,13 +34,12 @@ class Gui:
 
         self.connection_status = Label(font=('vendor', 28, 'bold'), text='Idle', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.fm = FrontMode(timeout=3)
+        self.fm = FrontMode(ip="192.168.1.11", timeout=3, source=0)
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
         if self.fm.data_sock_send.connect_mechanism():
-        # if self.fm.data_sock_send.connected:
             self.main_window.destroy()
             self.fm()
             time.sleep(0.5)

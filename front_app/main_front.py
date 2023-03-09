@@ -15,7 +15,7 @@ from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 
 class FrontMode:
     current_v_length = 5
-    def __init__(self, ip="127.0.0.1", port=20070, timeout=1, name="Front Sender"):
+    def __init__(self, ip="127.0.0.1", port=20070, timeout=1, source=0, name="Front Sender"):
         '''
         - Create CV object.
         - run Cv_obj.run_front() in thread.
@@ -26,14 +26,17 @@ class FrontMode:
         # instance for run ComputerVisionFrontal class
         self.ip, self.port, self.timeout, self.name = ip, port, timeout, name
         self.data_sock_send = Server(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
+        self.source = source
         self.to_send_fd = DataHolder()
-        self.computer_vision_frontal_instance = ComputerVisionFrontal()
+        self.servo_obj_list = [Angles(servo_pin=11), Angles(servo_pin=12), Angles(servo_pin=13)]
+        self.us_obj_list = [Measure(trig=22, echo=23), Measure(trig=24, echo=25), Measure(trig=26, echo=27)]
+
+        self.computer_vision_frontal_instance = ComputerVisionFrontal(source=self.source)
         # CV model run front in thread
         self.t_cv_front = Thread(target=self.computer_vision_frontal_instance.run_front,
                                  args=[self.data_sock_send], daemon=True)
         self.t_update_f = Thread(target=self.update_all, args=[self.to_send_fd, self.data_sock_send], daemon=True)
-        self.servo_obj_list = [Angles(servo_pin=11), Angles(servo_pin=12), Angles(servo_pin=13)]
-        self.us_obj_list = [Measure(trig=22, echo=23), Measure(trig=24, echo=25), Measure(trig=26, echo=27)]
+
         self.dist_list = [0] * 3
         self.cv_angle_list = self.last_angle_values = [0] * 3
         self.threads_activated = False
@@ -67,5 +70,6 @@ class FrontMode:
                        "D": send_fd.get_discrete()}
             data_sock.send_all(to_send)
             if to_send["F"] is not None:
-                cv2.imshow('SOCK_Sending This Frame...', to_send["F"])
-            time.sleep(0.01)
+                pass
+                # cv2.imshow('SOCK_Sending This Frame...', to_send["F"])
+            time.sleep(0.2)

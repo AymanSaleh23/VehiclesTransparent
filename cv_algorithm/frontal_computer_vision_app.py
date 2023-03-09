@@ -3,6 +3,7 @@ import time
 
 import cv2
 import torch
+import screeninfo
 
 from mathematics.mathlib import map_values_ranges
 from comlib.com_socket import *
@@ -131,18 +132,22 @@ class MultiCarsDetection:
 
 class ComputerVisionFrontal:
 
-    def __init__(self, width=500, height=300):
+    def __init__(self, source=0):
+        self.screen = screeninfo.get_monitors()[0]
+        self.width, self.height = self.screen.width, self.screen.height
+        # self.width, self.height = 500, 300
         # Some Initial  Parameters
-        self.width, self.height = width, height
         # Detection Instances
-        self.od = MultiCarsDetection(width=width, height=height)
+        self.od = MultiCarsDetection(width=self.width, height=self.height)
         self.frame_to_send = None
         self.angle_to_send = None
+        self.source = source
         # Read video
-        self.video = cv2.VideoCapture("video2.mp4")  # CAMERA - RECORDED VIDEO - SIMULATION
+        self.video = cv2.VideoCapture(source)  # CAMERA - RECORDED VIDEO - SIMULATION
 
-    def run_front(self, sock):
-
+    def run_front(self, sock, frames_per_detect=10):
+        frames_counter = 0
+        first_frame = True
         # Exit if video not opened.
         if not self.video.isOpened():
             print("Could not open video")
@@ -153,6 +158,10 @@ class ComputerVisionFrontal:
         while sock.connect_mechanism():
             # Read Frame by frame
             ok, frame = self.video.read()
+
+            while frame is None:
+                cv2.VideoCapture(self.source)
+
             frame = cv2.resize(frame, (self.width, self.height))  # Resize the Frame
 
             # Exit if video not opened.
@@ -161,15 +170,20 @@ class ComputerVisionFrontal:
                 # CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
                 self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
                 sys.exit()
+            if frames_counter >= frames_per_detect or first_frame:
+                self.cars_sections = self.od.detect(frame=frame)
+                frames_counter = 0
+                first_frame = False
 
-            cars_sections = self.od.detect(frame=frame)
+            frames_counter += 1
+
             # [ (451, 651) , (0,0) , (451, 651) ]
             position_angels = [
                 map_values_ranges(input_value=c[0], input_range_min=0, input_range_max=self.width,
                                   output_range_min=0,
-                                  output_range_max=180) for c in cars_sections]
+                                  output_range_max=180) for c in self.cars_sections]
             print('position_angels : ', position_angels)
-            print('cars_sections : ', cars_sections)
+            print('cars_sections : ', self.cars_sections)
 
             # CVFrontGlobalVariables.frame = frame
             self.frame_to_send = frame
@@ -179,11 +193,11 @@ class ComputerVisionFrontal:
 
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             print('Detected Left Car center  : ')
-            print(cars_sections[0])
+            print(self.cars_sections[0])
             print('Detected Middle Car center : ')
-            print(cars_sections[1])
+            print(self.cars_sections[1])
             print('Detected Right Car center : ')
-            print(cars_sections[2])
+            print(self.cars_sections[2])
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
             # Divide Frame Into Sections
@@ -198,8 +212,12 @@ class ComputerVisionFrontal:
             cv2.putText(frame, "Right Section", (round(self.width / (3 / 2)) + 5, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
                         (255, 0, 0), 2)
             # Showing The Video Frame
-            cv2.imshow('Current Front', frame)
-
+            window_name = 'Current Front'
+            cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+            cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
+            cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
+                                  cv2.WINDOW_FULLSCREEN)
+            cv2.imshow(window_name, frame)
             #         cv2.waitKey(0)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # if press q
@@ -210,7 +228,3 @@ class ComputerVisionFrontal:
 
         self.video.release()
         cv2.destroyAllWindows()
-
-
-# obj = ComputerVisionFrontal()
-# obj.run_front()

@@ -35,7 +35,7 @@ class Gui:
 
         self.connection_status = Label(font=('vendor', 28, 'bold'), text='Request A Connection', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.bm = BackMode(timeout=4)
+        self.bm = BackMode(ip="192.168.1.11", timeout=4)
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click

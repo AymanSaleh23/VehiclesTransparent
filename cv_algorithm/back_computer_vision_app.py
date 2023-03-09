@@ -3,6 +3,7 @@ import time
 import torch, cv2, sys
 from comlib import com_socket
 import mathematics.mathlib
+import screeninfo
 
 DEF_VAL = 0
 DEF_FLOAT = 0.0
@@ -91,11 +92,13 @@ class ObjectTracking:
 
 
 class ComputerVisionBackApp:
-    def __init__(self, width=500, height=300):
+    def __init__(self, width=500, height=300, source=0):
+        self.screen = screeninfo.get_monitors()[0]
+        self.width, self.height = self.screen.width, self.screen.height
         # Some Initial  Parameters
         self.tracking_area = DEF_VAL
         # ReSize the Frame
-        self.width, self.height = width, height
+        self.source = source
         # Initialize The x1,y1,x2,y2,text,conf,bbox
         self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.bbox, self.fps = 0, 0, 0, 0, '', 0, 0, 0
 
@@ -109,22 +112,22 @@ class ComputerVisionBackApp:
         self.current_streamed_frame = None
         self.last_streamed_frame = None
         # Selecting the center for ROI 'region of interest',and its left and right distance.
-        self.C_X, self.C_Y, self.tolerance = int(self.width / 2), int(self.height / 2), 120
+        self.C_X, self.C_Y, self.tolerance = int(self.width // 2), int(self.height // 3), self.width//4
 
         # Detection And Tracking Instances
         self.od = SingleCardDetection()
         self.ot = ObjectTracking()
-        self.front_vehicle_center = self.width / 2
+        self.front_vehicle_center = self.width // 2
         # received_video = cv2.VideoCapture(0)
 
-    def run_back(self, sock, timer_limit=100):
+    def run_back(self, sock, timer_limit=30, detect_per_frame=10):
         # periodic timer To make a new detection
         self.timer_limit = timer_limit
         # Flag To Run Detection After timerLimit times
         self.periodic_timer = DEF_VAL
         # Read video (emulates Camera)
 
-        video = cv2.VideoCapture(CURRENT_MACHINE_FRAME_SOURCE)
+        video = cv2.VideoCapture(self.source)
 
         # Exit if video not opened.
         if not video.isOpened():
@@ -149,8 +152,9 @@ class ComputerVisionBackApp:
 
             # Adjust ROI 'Region of interest'
             # ROI bounding Box
-            cv2.rectangle(frame, (self.C_X-self.tolerance, self.C_Y), (self.C_X + self.tolerance, self.height), (0, 255,
-                                                                                                                 0), 2)
+            cv2.rectangle(frame, (self.C_X - self.tolerance, self.C_Y),
+                          (self.C_X + self.tolerance, self.height),
+                          (0, 255, 0), 2)
             # ROI Center Point
             cv2.circle(frame, (self.C_X, self.C_Y), radius=0, color=(0, 0, 255), thickness=5)
 
@@ -170,13 +174,19 @@ class ComputerVisionBackApp:
                     # Rais up the flag of detecting the first frame and getting the initial BBOX for
                     # tracking successfully.
                     self.is_first_frame = False
+                    frame_counter = 0
+
                     print('*********************** First Frame Detection  ***********************')
                     print('BBOX : ', self.bbox)
                     print('**********************************************************************')
 
             else:
+
                 if self.periodic_timer % timer_limit == 0 or self.conf == 0:
-                    self.x1, self.y1, self.x2, self.y2, self.text, self.conf = self.od.detect(roi_frame)
+
+                    if self.periodic_timer >= detect_per_frame:
+                        self.x1, self.y1, self.x2, self.y2, self.text, self.conf = self.od.detect(roi_frame)
+
                     # So there is a car detected
                     if self.conf != 0:
                         w = abs(self.x1 - self.x2)
@@ -216,7 +226,7 @@ class ComputerVisionBackApp:
                 ok, bbox = self.ot.update_track(roi_frame)
 
                 # Calculate Frames per second (FPS)
-                self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer);
+                self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
 
                 # Tracking success
                 if ok:
@@ -240,7 +250,7 @@ class ComputerVisionBackApp:
                         self.last_streamed_frame = None
                     else:
                         try:
-                            cv2.imshow("SOCK_RECEIVING VIDEO", self.last_streamed_frame)
+                            # cv2.imshow("SOCK_RECEIVING VIDEO", self.last_streamed_frame)
                             self.last_streamed_frame = cv2.resize(self.last_streamed_frame,
                                                                   (self.tracking_area.shape[1], self.tracking_area.shape[0]))
                             print('########################################### streamed Data SHAPE : ',
@@ -257,12 +267,19 @@ class ComputerVisionBackApp:
             # End Tracking
                 cv2.rectangle(roi_frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255,255), 2)
 
-            self.x1, self.y1, self.x2, self.y2, self.text = 0,0,0,0,''
+            self.x1, self.y1, self.x2, self.y2, self.text = 0, 0, 0, 0, ''
             cv2.putText(frame, "{} {}".format("Frame NO : ", self.periodic_timer), (23, 50), cv2.FONT_HERSHEY_PLAIN,
                         2, (0, 255, 255), 2)
             # Display FPS on frame
             cv2.putText(frame, "FPS : " + str(int(self.fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
-            cv2.imshow('Back View', frame)
+            # cv2.imshow('Back View', frame)
+            # Showing The Video Frame
+            window_name = 'Back View'
+            cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+            cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
+            cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
+                                  cv2.WINDOW_FULLSCREEN)
+            cv2.imshow(window_name, frame)
             #cv2.imshow('Streamed Data', received_frame)
             #cv2.imshow("Tracking_area", self.tracking_area)
             # cv2.waitKey(0)
