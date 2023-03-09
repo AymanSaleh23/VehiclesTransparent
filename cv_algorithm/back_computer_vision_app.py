@@ -5,16 +5,14 @@ from comlib import com_socket
 import mathematics.mathlib
 import screeninfo
 
-DEF_VAL = 0
-DEF_FLOAT = 0.0
-DEF_TXT = ''
-CONFIDENCE_THRESHOLD = 0.6
-CURRENT_MACHINE_FRAME_SOURCE = "video2.mp4"
-
 # Object Detection Class
 
 
 class SingleCardDetection:
+    DEF_VAL = 0
+    DEF_FLOAT = 0.0
+    DEF_TXT = ''
+    CONFIDENCE_THRESHOLD = 0.6
 
     def __init__(self):
         print("Loading Object Detection")
@@ -24,11 +22,15 @@ class SingleCardDetection:
         # To detect specific categories, 2: car,5: bus,7: truck ,for more categories 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml'
         self.model.classes_to_detect = [2, 5, 7]
         # Reject any predictions with less than 60% confidence
-        self.threshold = CONFIDENCE_THRESHOLD
+        self.threshold = SingleCardDetection.CONFIDENCE_THRESHOLD
 
     def detect(self, frame):
-        self.x1, self.y1, self.x2, self.y2, self.text, self.conf = DEF_VAL, DEF_VAL, DEF_VAL,\
-            DEF_VAL, DEF_TXT, DEF_FLOAT
+        self.x1, self.y1, self.x2, self.y2, self.text, self.conf = SingleCardDetection.DEF_VAL,\
+                                                                    SingleCardDetection.DEF_VAL, \
+                                                                    SingleCardDetection.DEF_VAL,\
+                                                                    SingleCardDetection.DEF_VAL, \
+                                                                    SingleCardDetection.DEF_TXT, \
+                                                                    SingleCardDetection.DEF_FLOAT
         self.result = self.model(frame)
         self.df = self.result.pandas().xyxy[0]
         print('======================================================================================')
@@ -61,7 +63,7 @@ class ObjectTracking:
         print("CV models for Tracking")
         self.tracker_types = ['BOOSTING', 'MIL','KCF', 'TLD', 'MEDIANFLOW', 'GOTURN', 'MOSSE', 'CSRT']
         self.tracker_type = self.tracker_types[7]
-        self.tracker = DEF_VAL
+        self.tracker = SingleCardDetection.DEF_VAL
         if self.tracker_type == 'BOOSTING':
             self.tracker = cv2.TrackerBoosting_create()
         elif self.tracker_type == 'MIL':
@@ -96,15 +98,15 @@ class ComputerVisionBackApp:
         self.screen = screeninfo.get_monitors()[0]
         self.width, self.height = self.screen.width, self.screen.height
         # Some Initial  Parameters
-        self.tracking_area = DEF_VAL
+        self.tracking_area = SingleCardDetection.DEF_VAL
         # ReSize the Frame
         self.source = source
         # Initialize The x1,y1,x2,y2,text,conf,bbox
         self.x1, self.y1, self.x2, self.y2, self.text, self.conf, self.bbox, self.fps = 0, 0, 0, 0, '', 0, 0, 0
 
-        self.timer_limit = DEF_VAL
+        self.timer_limit = SingleCardDetection.DEF_VAL
         # Flag To Run Detection After timerLimit times
-        self.periodic_timer = DEF_VAL
+        self.periodic_timer = SingleCardDetection.DEF_VAL
         # Flag To Run Detection For The First Frame
         self.is_first_frame = True
 
@@ -124,7 +126,7 @@ class ComputerVisionBackApp:
         # periodic timer To make a new detection
         self.timer_limit = timer_limit
         # Flag To Run Detection After timerLimit times
-        self.periodic_timer = DEF_VAL
+        self.periodic_timer = SingleCardDetection.DEF_VAL
         # Read video (emulates Camera)
 
         video = cv2.VideoCapture(self.source)
@@ -264,15 +266,7 @@ class ComputerVisionBackApp:
                             print("Frame have no Size to reshape")
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
-            # End Tracking
-                cv2.rectangle(roi_frame, (self.x1, self.y1), (self.x2, self.y2), (0, 255,255), 2)
 
-            self.x1, self.y1, self.x2, self.y2, self.text = 0, 0, 0, 0, ''
-            cv2.putText(frame, "{} {}".format("Frame NO : ", self.periodic_timer), (23, 50), cv2.FONT_HERSHEY_PLAIN,
-                        2, (0, 255, 255), 2)
-            # Display FPS on frame
-            cv2.putText(frame, "FPS : " + str(int(self.fps)), (23, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (50, 255, 255), 2)
-            # cv2.imshow('Back View', frame)
             # Showing The Video Frame
             window_name = 'Back View'
             cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
@@ -280,11 +274,7 @@ class ComputerVisionBackApp:
             cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
                                   cv2.WINDOW_FULLSCREEN)
             cv2.imshow(window_name, frame)
-            #cv2.imshow('Streamed Data', received_frame)
-            #cv2.imshow("Tracking_area", self.tracking_area)
-            # cv2.waitKey(0)
-            # Exit if ESC pressed
-            # Press SPACE for exit
+
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             time.sleep(0.01)

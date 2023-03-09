@@ -34,7 +34,7 @@ class Gui:
 
         self.connection_status = Label(font=('vendor', 28, 'bold'), text='Idle', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.fm = FrontMode(ip="192.168.1.11", timeout=3, source=0)
+        self.fm = FrontMode(ip="192.168.1.11", timeout=3, source="video2.mp4")
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click

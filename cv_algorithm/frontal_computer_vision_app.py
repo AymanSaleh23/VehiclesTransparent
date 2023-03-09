@@ -8,15 +8,6 @@ import screeninfo
 from mathematics.mathlib import map_values_ranges
 from comlib.com_socket import *
 
-TOP_LEFT_X = 'xmin'
-TOP_LEFT_Y = 'ymin'
-BOTTOM_RIGHT_X = 'xmax'
-BOTTOM_RIGHT_Y = 'ymax'
-
-PREDICTION_THRESHOLD = 0.75
-CAR = 2
-BUS = 5
-TRUCK = 7
 
 """
     1. Naming.
@@ -43,6 +34,14 @@ def calculate_rectangle_center(top_left_x, top_left_y, bottom_right_x, bottom_ri
 
 
 class MultiCarsDetection:
+    PREDICTION_THRESHOLD = 0.75
+    CAR = 2
+    BUS = 5
+    TRUCK = 7
+    TOP_LEFT_X = 'xmin'
+    TOP_LEFT_Y = 'ymin'
+    BOTTOM_RIGHT_X = 'xmax'
+    BOTTOM_RIGHT_Y = 'ymax'
     def __init__(self, width, height):
 
         self.result = None
@@ -52,9 +51,9 @@ class MultiCarsDetection:
 
         self.model = torch.hub.load(repo_or_dir='yolov5', model='yolov5n', source='local')
 
-        self.model.classes_to_detect = [CAR, BUS, TRUCK]
+        self.model.classes_to_detect = [MultiCarsDetection.CAR, MultiCarsDetection.BUS, MultiCarsDetection.TRUCK]
 
-        self.threshold = PREDICTION_THRESHOLD
+        self.threshold = MultiCarsDetection.PREDICTION_THRESHOLD
 
         self.width = width
         self.height = height
@@ -77,13 +76,13 @@ class MultiCarsDetection:
             self.add_vehicles_areas_to_data_frame()
         # LEFT CAR BOUNDING BOX
             left_section_vehicles = self.detected_vehicles_data_frame[
-                self.detected_vehicles_data_frame[BOTTOM_RIGHT_X] <= self.end_left_section]
+                self.detected_vehicles_data_frame[MultiCarsDetection.BOTTOM_RIGHT_X] <= self.end_left_section]
             middle_section_vehicles = self.detected_vehicles_data_frame[
-                (self.detected_vehicles_data_frame[BOTTOM_RIGHT_X] > self.end_left_section) &
-                (self.detected_vehicles_data_frame[BOTTOM_RIGHT_X] <= self.end_middle_section)]
+                (self.detected_vehicles_data_frame[MultiCarsDetection.BOTTOM_RIGHT_X] > self.end_left_section) &
+                (self.detected_vehicles_data_frame[MultiCarsDetection.BOTTOM_RIGHT_X] <= self.end_middle_section)]
             right_section_vehicles = self.detected_vehicles_data_frame[
-                (self.detected_vehicles_data_frame[BOTTOM_RIGHT_X] > self.end_middle_section) &
-                (self.detected_vehicles_data_frame[BOTTOM_RIGHT_X] <= self.end_right_section)]
+                (self.detected_vehicles_data_frame[MultiCarsDetection.BOTTOM_RIGHT_X] > self.end_middle_section) &
+                (self.detected_vehicles_data_frame[MultiCarsDetection.BOTTOM_RIGHT_X] <= self.end_right_section)]
 
             left_section_car_center = self.get_and_draw_closest_detected_vehicle_box_and_center(
                 frame, left_section_vehicles, (0, 0, 255))
@@ -104,16 +103,16 @@ class MultiCarsDetection:
             left_section_closest_vehicle = self.detected_vehicles_data_frame.iloc[
                 section_vehicles['area'].idxmax()]
 
-            left_section_car_center = calculate_rectangle_center(left_section_closest_vehicle[TOP_LEFT_X],
-                                                                 left_section_closest_vehicle[TOP_LEFT_Y],
-                                                                 left_section_closest_vehicle[BOTTOM_RIGHT_X],
-                                                                 left_section_closest_vehicle[BOTTOM_RIGHT_Y])
+            left_section_car_center = calculate_rectangle_center(left_section_closest_vehicle[MultiCarsDetection.TOP_LEFT_X],
+                                                                 left_section_closest_vehicle[MultiCarsDetection.TOP_LEFT_Y],
+                                                                 left_section_closest_vehicle[MultiCarsDetection.BOTTOM_RIGHT_X],
+                                                                 left_section_closest_vehicle[MultiCarsDetection.BOTTOM_RIGHT_Y])
 
-            top_left_corner = (round(left_section_closest_vehicle[TOP_LEFT_X]),
-                               round(left_section_closest_vehicle[TOP_LEFT_Y]))
+            top_left_corner = (round(left_section_closest_vehicle[MultiCarsDetection.TOP_LEFT_X]),
+                               round(left_section_closest_vehicle[MultiCarsDetection.TOP_LEFT_Y]))
 
-            bottom_right_corner = (round(left_section_closest_vehicle[BOTTOM_RIGHT_X]),
-                                   round(left_section_closest_vehicle[BOTTOM_RIGHT_Y]))
+            bottom_right_corner = (round(left_section_closest_vehicle[MultiCarsDetection.BOTTOM_RIGHT_X]),
+                                   round(left_section_closest_vehicle[MultiCarsDetection.BOTTOM_RIGHT_Y]))
             # DISPLAY BOUNDING BOX
             cv2.rectangle(frame, top_left_corner, bottom_right_corner, color=section_color, thickness=2)
             # DISPLAY CENTER DOT
@@ -126,7 +125,10 @@ class MultiCarsDetection:
 
     def add_vehicles_areas_to_data_frame(self):
         self.detected_vehicles_data_frame['area'] = self.detected_vehicles_data_frame.apply(
-            lambda x: calculate_area(x[TOP_LEFT_X], x[TOP_LEFT_Y], x[BOTTOM_RIGHT_X], x[BOTTOM_RIGHT_Y]), axis=1
+            lambda x: calculate_area(x[MultiCarsDetection.TOP_LEFT_X],
+                                     x[MultiCarsDetection.TOP_LEFT_Y],
+                                     x[MultiCarsDetection.BOTTOM_RIGHT_X],
+                                     x[MultiCarsDetection.BOTTOM_RIGHT_Y]), axis=1
         )
 
 
@@ -135,7 +137,6 @@ class ComputerVisionFrontal:
     def __init__(self, source=0):
         self.screen = screeninfo.get_monitors()[0]
         self.width, self.height = self.screen.width, self.screen.height
-        # self.width, self.height = 500, 300
         # Some Initial  Parameters
         # Detection Instances
         self.od = MultiCarsDetection(width=self.width, height=self.height)
@@ -151,7 +152,6 @@ class ComputerVisionFrontal:
         # Exit if video not opened.
         if not self.video.isOpened():
             print("Could not open video")
-            # CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
             self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
             sys.exit()
 
@@ -188,7 +188,6 @@ class ComputerVisionFrontal:
             # CVFrontGlobalVariables.frame = frame
             self.frame_to_send = frame
 
-            # CVFrontGlobalVariables.detected_cars_centers_list = position_angels
             self.angle_to_send = position_angels
 
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
@@ -200,17 +199,6 @@ class ComputerVisionFrontal:
             print(self.cars_sections[2])
             print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
 
-            # Divide Frame Into Sections
-            # Left section
-            cv2.line(frame, (round(self.width / 3), 0), (round(self.width / 3), self.height), (0, 0, 0), 1)
-            cv2.putText(frame, "Left Section", (5, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
-            # Middle section
-            cv2.line(frame, (round(self.width / (3 / 2)), 0), (round(self.width / (3 / 2)), self.height), (0, 0, 0), 1)
-            cv2.putText(frame, "Middle Section", (round(self.width / 3) + 5, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
-                        (0, 255, 0), 2)
-            # Right section
-            cv2.putText(frame, "Right Section", (round(self.width / (3 / 2)) + 5, 70), cv2.FONT_HERSHEY_SIMPLEX, 0.75,
-                        (255, 0, 0), 2)
             # Showing The Video Frame
             window_name = 'Current Front'
             cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
