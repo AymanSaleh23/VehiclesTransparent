@@ -1,8 +1,11 @@
+import threading
 import time
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
 import sys
+from threading import Thread
+
 sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
 from back_app.main_back import BackMode
 
@@ -23,7 +26,7 @@ class Gui:
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
 
-        image = ImageTk.PhotoImage(file='D:\GP\code\VehiclesTransparent\GUI\photo.png')
+        image = ImageTk.PhotoImage(file='D:\\GP\\code\\VehiclesTransparent\\GUI\\photo.png')
         canvas = Canvas(self.main_window, width=1920, height=1080)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
@@ -35,16 +38,36 @@ class Gui:
 
         self.connection_status = Label(font=('vendor', 28, 'bold'), text='Request A Connection', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.bm = BackMode(ip="192.168.1.11", timeout=4)
+        self.bm = BackMode(ip="192.168.1.11", timeout=4, source="video2.mp4")
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
         if self.bm.data_sock_receive.connect_mechanism():
             self.main_window.destroy()
+            t_warning = Thread(target=self.update_warning, args=[], daemon=True)
+            t_warning.start()
             self.bm()
             time.sleep(0.5)
             self.__init__()
+
+    def update_warning(self):
+        """
+        asynchronously update flags in left and right to inform user not to pass
+        """
+        while True:
+            if self.bm.data_sock_receive.connected:
+                #   [[left], [center], [right]],[length] ]
+                if self.bm.received_fd.get_discrete() is not None:
+                    if self.bm.received_fd.get_discrete()[0][0][1] < 0:
+                        print("Don't Pass left is not Secure")
+
+                    if self.bm.received_fd.get_discrete()[0][2][1] < 0:
+                        print("Don't Pass right is not Secure")
+
+            time.sleep(0.1)
+
+
 
 
 gui = Gui()

@@ -242,7 +242,7 @@ class ComputerVisionBackApp:
             print('========================================== TIME : ', self.periodic_timer,
                   '=============================================')
 
-            if self.conf != 0 and self.periodic_timer < detect_per_frame:
+            if self.conf != 0:
                 # Start Tracking
                 # Start timer To Calculate FPS
                 timer = cv2.getTickCount()

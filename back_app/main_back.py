@@ -12,7 +12,7 @@ from Tools.Test_Measure_app_Front import *
 from mathematics.mathlib import *
 
 class BackMode:
-    def __init__(self, ip="127.0.0.1", port=20070, timeout=1, name="Receive Socket"):
+    def __init__(self, ip="127.0.0.1", port=20070, timeout=1, source=0, name="Receive Socket"):
         '''
         - Create CV object.
         - Create one measurement unit.
@@ -21,7 +21,7 @@ class BackMode:
         - read single distance
         - pass all parameters to mathematical model
         '''
-        self.ip, self.port, self.timeout, self.name = ip, port, timeout, name
+        self.ip, self.port, self.timeout, self.source, self.name = ip, port, timeout, name, source
         self.data_sock_receive = Client(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
 
         # instance for run ComputerVisionFrontal class
@@ -34,7 +34,7 @@ class BackMode:
         self.servo_obj = Angles(servo_pin=11)
         self.us_obj = Measure(trig=22, echo=23)
 
-        self.computer_vision_back_instance = ComputerVisionBackApp(source="video2.mp4")
+        self.computer_vision_back_instance = ComputerVisionBackApp(source=self.source)
 
         # CV model run front in thread
         self.t_cv_back = Thread(target=self.computer_vision_back_instance.run_back,

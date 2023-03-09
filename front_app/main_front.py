@@ -15,6 +15,7 @@ from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 
 class FrontMode:
     current_v_length = 5
+
     def __init__(self, ip="127.0.0.1", port=20070, timeout=1, source=0, name="Front Sender"):
         '''
         - Create CV object.
