@@ -59,15 +59,16 @@ class BackMode:
                 self.received_fd.set_discrete(received_discrete)
 
                 direct_distance = self.us_obj.distance_read()
-                abs_dist = math_model(data=self.received_fd.get_discrete()[0],
-                                      vehicle_length=self.received_fd.get_discrete()[1],
+                abs_dist = math_model(data=received_discrete[0],
+                                      vehicle_length=received_discrete[1],
                                       direct_distance=direct_distance,
                                       theta=self.computer_vision_back_instance.front_vehicle_center[0])
                 print(f"Front Vehicle Center: {self.computer_vision_back_instance.front_vehicle_center[0]}")
                 print(f"Absolute Distances: {abs_dist}")
 
-            print(f"received_fd.get_discrete(): {self.received_fd.get_discrete()}")
-            print(f'Data: \n{self.received_fd.get_discrete()}')
+            print(f"\n\n\n\nreceived_fd.get_discrete(): {received_discrete}\n\n\n\n")
+            print(f'Data: \n{self.received_discrete}')
             time.sleep(0.01)
-            self.received_fd.reset_discrete()
+            # self.received_fd.reset_discrete()
+
         self.data_sock_receive.s.close()
