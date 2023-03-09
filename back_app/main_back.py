@@ -21,7 +21,7 @@ class BackMode:
         - read single distance
         - pass all parameters to mathematical model
         '''
-        self.ip, self.port, self.timeout, self.source, self.name = ip, port, timeout, name, source
+        self.ip, self.port, self.timeout, self.name, self.source = ip, port, timeout, name, source
         self.data_sock_receive = Client(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
 
         # instance for run ComputerVisionFrontal class
@@ -39,13 +39,16 @@ class BackMode:
         # CV model run front in thread
         self.t_cv_back = Thread(target=self.computer_vision_back_instance.run_back,
                                 args=[self.data_sock_receive], daemon=True)
+
         self.threads_activated = False
 
-    def __call__(self):
+    def __call__(self, call_back):
         while self.data_sock_receive.connect_mechanism():
             if not self.threads_activated:
                 self.threads_activated = True
                 self.t_cv_back.start()
+                time.sleep(3)
+                call_back()
             received_frame, received_discrete = self.data_sock_receive.receive_all(1024)
             if received_frame is not None:
                 # Update frames which is received from socket.

@@ -121,6 +121,8 @@ class ComputerVisionBackApp:
         # Detection And Tracking Instances
         self.od = SingleCardDetection()
         self.ot = ObjectTracking()
+        # Read video (emulates Camera)
+        self.video = cv2.VideoCapture(self.source)
         self.front_vehicle_center = self.width // 2
         # received_video = cv2.VideoCapture(0)
 
@@ -142,18 +144,17 @@ class ComputerVisionBackApp:
         self.timer_limit = timer_limit
         # Flag To Run Detection After timerLimit times
         self.periodic_timer = SingleCardDetection.DEF_VAL
-        # Read video (emulates Camera)
-
-        video = cv2.VideoCapture(self.source)
 
         # Exit if video not opened.
-        if not video.isOpened():
+        while not self.video.isOpened():
+            self.video = cv2.VideoCapture(self.source)  # CAMERA - RECORDED VIDEO - SIMULATION
             print("Could not open video")
-            sys.exit()
+            time.sleep(1)
+            # sys.exit()
 
         while sock.connect_mechanism():
             # read Frame by frame
-            ok, frame = video.read()
+            ok, frame = self.video.read()
             # Resize the Frame
             frame = cv2.resize(frame, (self.width, self.height))
 

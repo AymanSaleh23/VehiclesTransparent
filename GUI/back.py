@@ -44,10 +44,10 @@ class Gui:
     # call back function to do action for binding on mouse click
     def call_back_click_event(self, event):
         if self.bm.data_sock_receive.connect_mechanism():
-            self.main_window.destroy()
+            # self.main_window.destroy()
             t_warning = Thread(target=self.update_warning, args=[], daemon=True)
             t_warning.start()
-            self.bm()
+            self.bm(self.main_window.destroy)
             time.sleep(0.5)
             self.__init__()
 
@@ -57,17 +57,17 @@ class Gui:
         """
         while True:
             if self.bm.data_sock_receive.connected:
-                #   [[left], [center], [right]],[length] ]
-                if self.bm.received_fd.get_discrete() is not None:
-                    if self.bm.received_fd.get_discrete()[0][0][1] < 0:
+                #   [[left_dist, ang], [center_dist, ang], [right_dist, ang]],[length] ]
+                print(f"\n\n\nself.bm.received_fd.get_discrete(){self.bm.received_fd.get_discrete()}\n\n\n")
+                buffer = self.bm.received_fd.get_discrete()
+                if buffer is not None:
+                    if buffer[0][0][1] < 0:
                         print("Don't Pass left is not Secure")
 
-                    if self.bm.received_fd.get_discrete()[0][2][1] < 0:
+                    if buffer[0][2][1] < 0:
                         print("Don't Pass right is not Secure")
 
             time.sleep(0.1)
-
-
 
 
 gui = Gui()
