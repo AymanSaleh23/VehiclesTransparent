@@ -3,7 +3,7 @@ import time
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
-import sys
+import sys, cv2
 from threading import Thread
 
 sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
@@ -45,7 +45,7 @@ class Gui:
     def call_back_click_event(self, event):
         if self.bm.data_sock_receive.connect_mechanism():
             # self.main_window.destroy()
-            t_warning = Thread(target=self.update_warning, args=[self.bm.received_fd.get_discrete], daemon=True)
+            t_warning = Thread(target=self.update_warning, args=[self.bm.received_fd], daemon=True)
             t_warning.start()
             self.bm(self.main_window.destroy)
             time.sleep(0.5)
@@ -57,15 +57,17 @@ class Gui:
         """
         while True:
             if self.bm.data_sock_receive.connected:
-                buffer = temp()
+                buffer_disc = temp.get_discrete()
+                buffer_frame = temp.get_frame()
                 #   [[left_dist, ang], [center_dist, ang], [right_dist, ang]],[length] ]
                 print(f"\n\n\nself.bm.received_fd.get_discrete(){self.bm.received_fd.get_discrete()}\n\n\n")
 
-                if buffer is not None:
-                    if buffer[0][0][1] < 0:
+                if buffer_disc is not None:
+
+                    if buffer_disc[0][0][1] < 0:
                         print("Don't Pass left is not Secure")
 
-                    if buffer[0][2][1] < 0:
+                    if buffer_disc[0][2][1] < 0:
                         print("Don't Pass right is not Secure")
 
             time.sleep(0.1)

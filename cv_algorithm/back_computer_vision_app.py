@@ -96,7 +96,7 @@ class ObjectTracking:
 class ComputerVisionBackApp:
     width_ratio = 0.15
     height_ratio = 0.3
-    def __init__(self, width=500, height=300, source=0):
+    def __init__(self, source=0):
         self.screen = screeninfo.get_monitors()[0]
         self.width, self.height = self.screen.width, self.screen.height
         # Some Initial  Parameters
