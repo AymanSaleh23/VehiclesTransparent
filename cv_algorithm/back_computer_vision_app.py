@@ -111,7 +111,7 @@ class ComputerVisionBackApp:
         self.periodic_timer = SingleCardDetection.DEF_VAL
         # Flag To Run Detection For The First Frame
         self.is_first_frame = True
-
+        self.last_read_frame = None
         #TO_DO: Valeo Icon/Logo as a default pic.
         self.current_streamed_frame = None
         self.last_streamed_frame = None
@@ -300,6 +300,7 @@ class ComputerVisionBackApp:
             cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
             cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
                                   cv2.WINDOW_FULLSCREEN)
+            self.last_read_frame = frame
             cv2.imshow(window_name, frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):

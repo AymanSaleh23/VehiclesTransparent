@@ -50,6 +50,11 @@ class BackMode:
                 time.sleep(3)
                 call_back()
             received_frame, received_discrete = self.data_sock_receive.receive_all(1024)
+            frame = self.computer_vision_back_instance.last_read_frame
+            frame = cv2.resize(frame, (self.computer_vision_back_instance.width, self.computer_vision_back_instance.height))
+            self.update_warning(frame, received_discrete)
+            cv2.imshow("Informed Frame", frame)
+            time.sleep(0.2)
             if received_frame is not None:
                 # Update frames which is received from socket.
                 self.computer_vision_back_instance.current_streamed_frame = received_frame
@@ -72,3 +77,43 @@ class BackMode:
             # self.received_fd.reset_discrete()
 
         self.data_sock_receive.s.close()
+
+    def update_warning(self, frame, disc):
+        """
+        asynchronously update flags in left and right to inform user not to pass
+        """
+        secure = [True, True]
+        # while True:
+        if self.data_sock_receive.connected:
+            #   [[left_dist, ang], [center_dist, ang], [right_dist, ang]],[length] ]
+            print(f"\n\n\nself.bm.received_fd.get_discrete(){disc}\n\n\n")
+
+            if disc is not None:
+
+                if disc[0][0][1] < 0:
+                    secure[0] = False
+                    cv2.putText(frame, 'Not Secure!', (self.computer_vision_back_instance.width*0.2,
+                                                       self.computer_vision_back_instance.height//2),
+                                                        cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 0, 255), 13, cv2.LINE_AA)
+                    print("Don't Pass left is not Secure")
+
+                if disc[0][2][1] < 0:
+                    secure[1] = False
+                    cv2.putText(frame, 'Not Secure!', (self.computer_vision_back_instance.width*0.8,
+                                                       self.computer_vision_back_instance.height//2),
+                                                        cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 0, 255), 13, cv2.LINE_AA)
+                    print("Don't Pass right is not Secure")
+
+                if secure[0]:
+                    cv2.putText(frame, 'Secure!', (10,
+                                                       500),
+                                cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 255, 0), 13, cv2.LINE_AA)
+                    print("You Can Pass left it is Secure")
+
+                if secure[1]:
+                    cv2.putText(frame, 'Secure!', (200,
+                                                       500),
+                                cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 255, 0), 13, cv2.LINE_AA)
+                    print("You Can Pass right it is Secure")
+
+        # time.sleep(0.1)
