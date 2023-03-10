@@ -18,7 +18,7 @@ class SingleCardDetection:
         print("Loading Object Detection")
         print("Running YOLOv5n")
         # You can select the size of your model as shown in the previous image.
-        self.model = torch.hub.load('yolov5', 'yolov5n', source='local')
+        self.model = torch.hub.load('..\\GUI\\yolov5', 'yolov5n', source='local')
         # To detect specific categories, 2: car,5: bus,7: truck ,for more categories 'https://github.com/ultralytics/yolov5/blob/master/data/coco128.yaml'
         self.model.classes_to_detect = [2, 5, 7]
         # Reject any predictions with less than 60% confidence
@@ -165,6 +165,7 @@ class ComputerVisionBackApp:
                 break
 
             else:
+
                 # read received Video
                 pass
 
@@ -295,16 +296,7 @@ class ComputerVisionBackApp:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
 
             # Showing The Video Frame
-            window_name = 'Back View'
-            cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
-            cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
-            cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
-                                  cv2.WINDOW_FULLSCREEN)
             self.last_read_frame = frame
-            cv2.imshow(window_name, frame)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
             time.sleep(0.01)
 
             self.last_streamed_frame = self.current_streamed_frame

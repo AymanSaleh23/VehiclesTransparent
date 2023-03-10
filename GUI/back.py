@@ -1,12 +1,11 @@
+import sys, cv2, os
+sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
 import threading
 import time
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
-import sys, cv2
 from threading import Thread
-
-sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
 from back_app.main_back import BackMode
 
 '''
@@ -25,8 +24,8 @@ class Gui:
         self.main_window.resizable(0, 0)
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
-
-        image = ImageTk.PhotoImage(file='D:\\GP\\code\\VehiclesTransparent\\GUI\\photo.png')
+        os.system("ls")
+        image = ImageTk.PhotoImage(file='..\\GUI\\photo.png')
         canvas = Canvas(self.main_window, width=1920, height=1080)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
