@@ -61,11 +61,6 @@ class BackMode:
                 self.computer_vision_back_instance.current_streamed_frame = received_frame
                 self.received_fd.set_frame(received_frame)
 
-                print(f"Width: {self.width}")
-                print(f"Height: {self.height}")
-                print(f"self.computer_vision_back_instance Width: {self.computer_vision_back_instance.width}")
-                print(f"self.computer_vision_back_instance Height: {self.computer_vision_back_instance.height}")
-
                 if self.computer_vision_back_instance.last_read_frame is not None:
                     self.computer_vision_back_instance.last_read_frame = \
                         self.update_warning(self.computer_vision_back_instance.last_read_frame, received_discrete)
