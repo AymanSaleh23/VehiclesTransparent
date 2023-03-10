@@ -1,5 +1,6 @@
 from threading import Thread
-import time
+import time, screeninfo
+import cv2
 
 from comlib.com_socket import *
 from cv_algorithm.back_computer_vision_app import ComputerVisionBackApp
@@ -43,6 +44,9 @@ class BackMode:
         self.threads_activated = False
 
     def __call__(self, call_back):
+        self.screen = screeninfo.get_monitors()[0]
+        self.width, self.height = self.screen.width, self.screen.height
+
         while self.data_sock_receive.connect_mechanism():
             if not self.threads_activated:
                 self.threads_activated = True
@@ -50,15 +54,26 @@ class BackMode:
                 time.sleep(3)
                 call_back()
             received_frame, received_discrete = self.data_sock_receive.receive_all(1024)
-            frame = self.computer_vision_back_instance.last_read_frame
-            frame = cv2.resize(frame, (self.computer_vision_back_instance.width, self.computer_vision_back_instance.height))
-            self.update_warning(frame, received_discrete)
-            cv2.imshow("Informed Frame", frame)
+            # cv2.imshow("Informed Frame", frame)
             time.sleep(0.2)
             if received_frame is not None:
                 # Update frames which is received from socket.
                 self.computer_vision_back_instance.current_streamed_frame = received_frame
                 self.received_fd.set_frame(received_frame)
+
+                print(f"Width: {self.width}")
+                print(f"Height: {self.height}")
+                print(f"self.computer_vision_back_instance Width: {self.computer_vision_back_instance.width}")
+                print(f"self.computer_vision_back_instance Height: {self.computer_vision_back_instance.height}")
+
+                if self.computer_vision_back_instance.last_read_frame is not None:
+                    self.computer_vision_back_instance.last_read_frame = \
+                        self.update_warning(self.computer_vision_back_instance.last_read_frame, received_discrete)
+
+                    self.computer_vision_back_instance.last_read_frame = \
+                        cv2.resize(self.computer_vision_back_instance.last_read_frame,
+                                   (self.computer_vision_back_instance.width,
+                                   self.computer_vision_back_instance.height))
 
             if received_discrete is not None and type(self.computer_vision_back_instance.front_vehicle_center) is list:
                 self.received_fd.set_discrete(received_discrete)
@@ -73,6 +88,14 @@ class BackMode:
 
             print(f"\n\n\n\nreceived_fd.get_discrete(): {received_discrete}\n\n\n\n")
             print(f'Data: \n{self.received_discrete}')
+            window_name = 'Back View'
+            cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+            cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
+            cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
+                                  cv2.WINDOW_FULLSCREEN)
+            cv2.imshow(window_name, self.computer_vision_back_instance.last_read_frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
             time.sleep(0.01)
             # self.received_fd.reset_discrete()
 
@@ -92,28 +115,34 @@ class BackMode:
 
                 if disc[0][0][1] < 0:
                     secure[0] = False
-                    cv2.putText(frame, 'Not Secure!', (self.computer_vision_back_instance.width*0.2,
-                                                       self.computer_vision_back_instance.height//2),
-                                                        cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 0, 255), 13, cv2.LINE_AA)
+                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width//4,
+                                           self.computer_vision_back_instance.height*3//4),
+                                    (5, self.computer_vision_back_instance.height * 3 // 4), (0, 0, 255), 10)
                     print("Don't Pass left is not Secure")
 
                 if disc[0][2][1] < 0:
                     secure[1] = False
-                    cv2.putText(frame, 'Not Secure!', (self.computer_vision_back_instance.width*0.8,
-                                                       self.computer_vision_back_instance.height//2),
-                                                        cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 0, 255), 13, cv2.LINE_AA)
+                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width * 3 // 4,
+                                           self.computer_vision_back_instance.height * 3 // 4),
+                                    (self.computer_vision_back_instance.width - 5,
+                                     self.computer_vision_back_instance.height * 3 // 4),
+                                    (0, 0, 255),
+                                    10)
                     print("Don't Pass right is not Secure")
 
                 if secure[0]:
-                    cv2.putText(frame, 'Secure!', (10,
-                                                       500),
-                                cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 255, 0), 13, cv2.LINE_AA)
+                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width // 4,
+                                           self.computer_vision_back_instance.height * 3 // 4),
+                                    (5, self.computer_vision_back_instance.height * 3 // 4), (0, 255, 0), 10)
+
                     print("You Can Pass left it is Secure")
 
                 if secure[1]:
-                    cv2.putText(frame, 'Secure!', (200,
-                                                       500),
-                                cv2.FONT_HERSHEY_SIMPLEX, 6, (0, 255, 0), 13, cv2.LINE_AA)
+                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width * 3 // 4,
+                                           self.computer_vision_back_instance.height * 3 // 4),
+                                    (self.computer_vision_back_instance.width - 5,
+                                     self.computer_vision_back_instance.height * 3 // 4),
+                                    (0, 255, 0),
+                                    10)
                     print("You Can Pass right it is Secure")
-
-        # time.sleep(0.1)
+        return frame

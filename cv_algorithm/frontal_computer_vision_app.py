@@ -48,8 +48,7 @@ class MultiCarsDetection:
         self.detected_vehicles_data_frame = None
         print("Loading Object Detection")
         print("Running YOLOv5n")
-
-        self.model = torch.hub.load(repo_or_dir='yolov5', model='yolov5n', source='local')
+        self.model = torch.hub.load(repo_or_dir='..\\GUI\\yolov5', model='yolov5n', source='local')
 
         self.model.classes_to_detect = [MultiCarsDetection.CAR, MultiCarsDetection.BUS, MultiCarsDetection.TRUCK]
 
