@@ -1,7 +1,6 @@
 import time
 
 import torch, cv2, sys
-from comlib import com_socket
 import mathematics.mathlib
 import screeninfo
 

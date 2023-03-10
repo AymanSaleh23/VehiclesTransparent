@@ -1,4 +1,4 @@
-import sys, cv2, os
+import sys, cv2
 sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
 import threading
 import time
@@ -24,7 +24,6 @@ class Gui:
         self.main_window.resizable(0, 0)
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
-        os.system("ls")
         image = ImageTk.PhotoImage(file='..\\GUI\\photo.png')
         canvas = Canvas(self.main_window, width=1920, height=1080)
         canvas.pack(expand=True, fill=BOTH)

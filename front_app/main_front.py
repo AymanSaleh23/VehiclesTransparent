@@ -8,7 +8,7 @@ import cv2
 
 # uncomment this to test on PC
 from Tools.Test_Measure_app_Front import *
-from comlib.com_socket import *
+from communication.com_socket import *
 from threading import Thread
 from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 
