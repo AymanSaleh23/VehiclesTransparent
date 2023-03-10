@@ -1,4 +1,4 @@
-from comlib.com_serial import SerialComm
+from communication.com_serial import SerialComm
 
 if __name__ == '__main__':
     ss = SerialComm(port='/dev/ttyACM0', baudrate=115200)

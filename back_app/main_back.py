@@ -2,7 +2,7 @@ from threading import Thread
 import time, screeninfo
 import cv2
 
-from comlib.com_socket import *
+from communication.com_socket import *
 from cv_algorithm.back_computer_vision_app import ComputerVisionBackApp
 # uncomment to test on RPi
 #from distances.dist_measure import *

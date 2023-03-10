@@ -1,3 +1,5 @@
+from distances.dist_measure import Measure
+import time
 u1 = Measure(27, 22)
 u2 = Measure(23, 24)
 u3 = Measure(5, 6)
