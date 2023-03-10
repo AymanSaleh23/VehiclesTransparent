@@ -1,5 +1,5 @@
-from comlib.com_socket import Server
-import cv2, pickle, struct
+from communication.com_socket import Server
+import cv2
 
 s = Server("127.0.0.1", 10050)
 

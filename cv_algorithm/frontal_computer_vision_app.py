@@ -6,7 +6,6 @@ import torch
 import screeninfo
 
 from mathematics.mathlib import map_values_ranges
-from comlib.com_socket import *
 
 
 """
@@ -48,8 +47,7 @@ class MultiCarsDetection:
         self.detected_vehicles_data_frame = None
         print("Loading Object Detection")
         print("Running YOLOv5n")
-
-        self.model = torch.hub.load(repo_or_dir='yolov5', model='yolov5n', source='local')
+        self.model = torch.hub.load(repo_or_dir='..\\GUI\\yolov5', model='yolov5n', source='local')
 
         self.model.classes_to_detect = [MultiCarsDetection.CAR, MultiCarsDetection.BUS, MultiCarsDetection.TRUCK]
 
@@ -143,17 +141,20 @@ class ComputerVisionFrontal:
         self.frame_to_send = None
         self.angle_to_send = None
         self.source = source
+        self.video = cv2.VideoCapture(self.source)  # CAMERA - RECORDED VIDEO - SIMULATION
         # Read video
-        self.video = cv2.VideoCapture(source)  # CAMERA - RECORDED VIDEO - SIMULATION
 
     def run_front(self, sock, frames_per_detect=10):
         frames_counter = 0
         first_frame = True
+
         # Exit if video not opened.
-        if not self.video.isOpened():
+        while not self.video.isOpened():
             print("Could not open video")
+            self.video = cv2.VideoCapture(self.source)  # CAMERA - RECORDED VIDEO - SIMULATION
             self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
-            sys.exit()
+            time.sleep(1)
+            # sys.exit()
 
         while sock.connect_mechanism():
             # Read Frame by frame
@@ -167,8 +168,7 @@ class ComputerVisionFrontal:
             # Exit if video not opened.
             if not ok:
                 print('Cannot read video file')
-                # CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
-                self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
+                self.angle_to_send = [-1, -1, -1]
                 sys.exit()
             if frames_counter >= frames_per_detect or first_frame:
                 self.cars_sections = self.od.detect(frame=frame)
@@ -206,10 +206,8 @@ class ComputerVisionFrontal:
             cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
                                   cv2.WINDOW_FULLSCREEN)
             cv2.imshow(window_name, frame)
-            #         cv2.waitKey(0)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):  # if press q
-                # CVFrontGlobalVariables.detected_cars_centers_list = [(-1, 0), (-1, 0), (-1, 0)]
                 self.angle_to_send = [(-1, 0), (-1, 0), (-1, 0)]
                 break
             time.sleep(0.01)

@@ -8,13 +8,14 @@ import cv2
 
 # uncomment this to test on PC
 from Tools.Test_Measure_app_Front import *
-from comlib.com_socket import *
+from communication.com_socket import *
 from threading import Thread
 from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 
 
 class FrontMode:
     current_v_length = 5
+
     def __init__(self, ip="127.0.0.1", port=20070, timeout=1, source=0, name="Front Sender"):
         '''
         - Create CV object.
@@ -41,22 +42,24 @@ class FrontMode:
         self.cv_angle_list = self.last_angle_values = [0] * 3
         self.threads_activated = False
 
-    def __call__(self):
+    def __call__(self, call_back):
         while self.data_sock_send.connect_mechanism():
             if not self.threads_activated:
                 self.threads_activated = True
                 self.t_update_f.start()
                 self.t_cv_front.start()
+                time.sleep(3)
+                call_back()
             self.cv_angle_list = self.computer_vision_frontal_instance.angle_to_send
             if self.computer_vision_frontal_instance.angle_to_send is None:
-                cv_angle_list = [45, 90, 135]
+                self.cv_angle_list = [-1, -1, -1]
 
             # Check if the last received values is different
             for section in range(0, len(self.servo_obj_list)):
-                self.servo_obj_list[section].set_angle(cv_angle_list[section])
+                self.servo_obj_list[section].set_angle(self.cv_angle_list[section])
                 self.dist_list[section] = self.us_obj_list[section].distance_read()
 
-            disc = [[[self.dist_list[i], cv_angle_list[i]] for i in range(0, 3)], FrontMode.current_v_length]
+            disc = [[[self.dist_list[i], self.cv_angle_list[i]] for i in range(0, 3)], FrontMode.current_v_length]
             self.to_send_fd.set_discrete(disc)
             self.to_send_fd.set_frame(self.computer_vision_frontal_instance.frame_to_send)
 

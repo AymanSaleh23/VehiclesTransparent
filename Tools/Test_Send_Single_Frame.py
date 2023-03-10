@@ -1,5 +1,5 @@
 import time
-from comlib.com_socket import *
+from communication.com_socket import *
 import cv2
 
 serv = Server(ip="192.168.1.11", port=10050)
