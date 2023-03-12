@@ -1,5 +1,6 @@
 import sys, time
-sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
+
+sys.path.extend(['I:\\Proposel\\VehiclesTransparent'])
 from tkinter import *
 from tkinter.ttk import *
 from PIL import Image, ImageTk
@@ -22,7 +23,7 @@ class Gui:
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
 
-        image = ImageTk.PhotoImage(file='..\\GUI\\photo.png')
+        image = ImageTk.PhotoImage(file='photo.png')
         canvas = Canvas(self.main_window, width=1000, height=850)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
@@ -34,7 +35,7 @@ class Gui:
 
         self.connection_status = Label(font=('vendor', 28, 'bold'), text='Idle', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.fm = FrontMode(ip="192.168.1.11", timeout=3, source="video2.mp4")
+        self.fm = FrontMode(ip="192.168.75.1", timeout=3, source="rear_1.mp4")
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
@@ -44,5 +45,6 @@ class Gui:
             self.fm(self.main_window.destroy)
             time.sleep(0.5)
             self.__init__()
+
 
 gui = Gui()

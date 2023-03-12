@@ -1,4 +1,4 @@
-from comlib.com_socket import Client
+from communication.com_socket import Client
 import time
 c = Client(ip="192.168.1.11", port=20029, name="Socket_Receiver")
 while True:

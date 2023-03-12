@@ -3,7 +3,7 @@ import sys
 import torch
 
 import mathematics.mathlib
-from comlib import com_socket
+from communication import com_socket
 
 DEF_VAL = 0
 DEF_FLOAT = 0.0

@@ -1,16 +1,17 @@
 from threading import Thread
-import time, screeninfo
-import cv2
 
-from comlib.com_socket import *
-from cv_algorithm.back_computer_vision_app import ComputerVisionBackApp
-# uncomment to test on RPi
-#from distances.dist_measure import *
-#from distances.dist_angle import *
+import screeninfo
 
 # uncomment this to test on PC
 from Tools.Test_Measure_app_Front import *
+from communication.com_socket import *
+from cv_algorithm.back_computer_vision_app import ComputerVisionBackApp
 from mathematics.mathlib import *
+
+
+# uncomment to test on RPi
+# from distances.dist_measure import *
+# from distances.dist_angle import *
 
 class BackMode:
     def __init__(self, ip="127.0.0.1", port=20070, timeout=1, source=0, name="Receive Socket"):
@@ -60,7 +61,10 @@ class BackMode:
                 # Update frames which is received from socket.
                 self.computer_vision_back_instance.current_streamed_frame = received_frame
                 self.received_fd.set_frame(received_frame)
-
+                # TODO: Synchronization Error
+                """
+                Recommended Solution:  Moving The warning issues to back_computer_vision_app.py
+                """
                 if self.computer_vision_back_instance.last_read_frame is not None:
                     self.computer_vision_back_instance.last_read_frame = \
                         self.update_warning(self.computer_vision_back_instance.last_read_frame, received_discrete)
@@ -68,7 +72,7 @@ class BackMode:
                     self.computer_vision_back_instance.last_read_frame = \
                         cv2.resize(self.computer_vision_back_instance.last_read_frame,
                                    (self.computer_vision_back_instance.width,
-                                   self.computer_vision_back_instance.height))
+                                    self.computer_vision_back_instance.height))
 
             if received_discrete is not None and type(self.computer_vision_back_instance.front_vehicle_center) is list:
                 self.received_fd.set_discrete(received_discrete)
@@ -88,9 +92,15 @@ class BackMode:
             cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
             cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
                                   cv2.WINDOW_FULLSCREEN)
+            # TODO : Assign Here makes Error
+            """
+            Recommended Solution : Move all images showing to one place like back_computer_vision_app.py
+            """
             cv2.imshow(window_name, self.computer_vision_back_instance.last_read_frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
             time.sleep(0.01)
             # self.received_fd.reset_discrete()
 
@@ -110,34 +120,63 @@ class BackMode:
 
                 if disc[0][0][1] < 0:
                     secure[0] = False
-                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width//4,
-                                           self.computer_vision_back_instance.height*3//4),
-                                    (5, self.computer_vision_back_instance.height * 3 // 4), (0, 0, 255), 10)
+                    s_img = cv2.imread("I:\\Proposel\\VehiclesTransparent\\GUI\\unsafe_left.png", -1)
+                    y_offset = self.computer_vision_back_instance.height * 3 // 4
+                    x_offset = self.computer_vision_back_instance.width // 4
+                    y1, y2 = y_offset, y_offset + s_img.shape[0]
+                    x1, x2 = x_offset, x_offset + s_img.shape[1]
+
+                    alpha_s = s_img[:, :, 3] / 255.0
+                    alpha_l = 1.0 - alpha_s
+                    frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                    frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                    frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+
                     print("Don't Pass left is not Secure")
 
                 if disc[0][2][1] < 0:
                     secure[1] = False
-                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width * 3 // 4,
-                                           self.computer_vision_back_instance.height * 3 // 4),
-                                    (self.computer_vision_back_instance.width - 5,
-                                     self.computer_vision_back_instance.height * 3 // 4),
-                                    (0, 0, 255),
-                                    10)
+                    s_img = cv2.imread("I:\\Proposel\\VehiclesTransparent\\GUI\\unsafe_right.png", -1)
+                    y_offset = self.computer_vision_back_instance.height * 3 // 4
+                    x_offset = self.computer_vision_back_instance.width * 3 // 4
+                    y1, y2 = y_offset, y_offset + s_img.shape[0]
+                    x1, x2 = x_offset, x_offset + s_img.shape[1]
+
+                    alpha_s = s_img[:, :, 3] / 255.0
+                    alpha_l = 1.0 - alpha_s
+                    frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                    frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                    frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+
                     print("Don't Pass right is not Secure")
 
                 if secure[0]:
-                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width // 4,
-                                           self.computer_vision_back_instance.height * 3 // 4),
-                                    (5, self.computer_vision_back_instance.height * 3 // 4), (0, 255, 0), 10)
+                    s_img = cv2.imread("I:\\Proposel\\VehiclesTransparent\\GUI\\safe_left.png", -1)
+                    y_offset = self.computer_vision_back_instance.height * 3 // 4
+                    x_offset = self.computer_vision_back_instance.width // 4
+                    y1, y2 = y_offset, y_offset + s_img.shape[0]
+                    x1, x2 = x_offset, x_offset + s_img.shape[1]
+
+                    alpha_s = s_img[:, :, 3] / 255.0
+                    alpha_l = 1.0 - alpha_s
+                    frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                    frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                    frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
 
                     print("You Can Pass left it is Secure")
 
                 if secure[1]:
-                    cv2.arrowedLine(frame, (self.computer_vision_back_instance.width * 3 // 4,
-                                           self.computer_vision_back_instance.height * 3 // 4),
-                                    (self.computer_vision_back_instance.width - 5,
-                                     self.computer_vision_back_instance.height * 3 // 4),
-                                    (0, 255, 0),
-                                    10)
+                    s_img = cv2.imread("I:\\Proposel\\VehiclesTransparent\\GUI\\safe_right.png", -1)
+                    y_offset = self.computer_vision_back_instance.height * 3 // 4
+                    x_offset = self.computer_vision_back_instance.width * 3 // 4
+                    y1, y2 = y_offset, y_offset + s_img.shape[0]
+                    x1, x2 = x_offset, x_offset + s_img.shape[1]
+
+                    alpha_s = s_img[:, :, 3] / 255.0
+                    alpha_l = 1.0 - alpha_s
+                    frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                    frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                    frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+
                     print("You Can Pass right it is Secure")
         return frame

@@ -1,5 +1,5 @@
 import sys, cv2, os
-sys.path.extend(['D:\\GP\\code\\VehiclesTransparent'])
+sys.path.extend(['I:\\Proposel\\VehiclesTransparent'])
 import threading
 import time
 from tkinter import *
@@ -25,7 +25,7 @@ class Gui:
         self.main_window.config(cursor="none")
         self.main_window.bind('<ButtonPress-1>', self.call_back_click_event)
         os.system("ls")
-        image = ImageTk.PhotoImage(file='..\\GUI\\photo.png')
+        image = ImageTk.PhotoImage(file='photo.png')
         canvas = Canvas(self.main_window, width=1920, height=1080)
         canvas.pack(expand=True, fill=BOTH)
         # Add the image in the canvas
@@ -37,7 +37,7 @@ class Gui:
 
         self.connection_status = Label(font=('vendor', 28, 'bold'), text='Request A Connection', background="#AFD1EE")
         self.connection_status.place(relx=.5, rely=.25, anchor="center")
-        self.bm = BackMode(ip="192.168.1.11", timeout=4, source="video2.mp4")
+        self.bm = BackMode(ip="192.168.75.1", timeout=4, source="rear_1.mp4")
         self.main_window.mainloop()
 
     # call back function to do action for binding on mouse click
