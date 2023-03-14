@@ -324,7 +324,7 @@ class ComputerVisionBackApp:
 
         if disc is not None:
             if disc[0][0][0] > 0:
-                s_img = cv2.imread("D:\\GP\\code\\VehiclesTransparent\\GUI\\unsafe_left.png", -1)
+                s_img = cv2.imread("..\\GUI\\unsafe_left.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width // 4
                 y1, y2 = y_offset, y_offset + s_img.shape[0]
@@ -338,7 +338,7 @@ class ComputerVisionBackApp:
                 print("Don't Pass left is not Secure")
 
             elif disc[0][0][0] < 0:
-                s_img = cv2.imread("D:\\GP\\code\\VehiclesTransparent\\GUI\\safe_left.png", -1)
+                s_img = cv2.imread("..\\GUI\\safe_left.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width // 4
                 y1, y2 = y_offset, y_offset + s_img.shape[0]
@@ -352,7 +352,7 @@ class ComputerVisionBackApp:
                 print("Pass left is Secure")
 
             if disc[0][2][0] > 0:
-                s_img = cv2.imread("D:\\GP\\code\\VehiclesTransparent\\GUI\\unsafe_right.png", -1)
+                s_img = cv2.imread("..\\GUI\\unsafe_right.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width * 3 // 4
                 y1, y2 = y_offset, y_offset + s_img.shape[0]
@@ -366,7 +366,7 @@ class ComputerVisionBackApp:
                 print("Don't Pass right is not Secure")
 
             elif disc[0][2][0] < 0:
-                s_img = cv2.imread("D:\\GP\\code\\VehiclesTransparent\\GUI\\safe_right.png", -1)
+                s_img = cv2.imread("..\\GUI\\safe_right.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width * 3 // 4
                 y1, y2 = y_offset, y_offset + s_img.shape[0]
