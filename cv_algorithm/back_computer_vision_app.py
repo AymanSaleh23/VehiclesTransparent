@@ -323,7 +323,7 @@ class ComputerVisionBackApp:
         print(f"\n\n\nself.bm.received_fd.get_discrete(){disc}\n\n\n")
 
         if disc is not None:
-            if disc[0][0][0] > 0:
+            if disc[0][0][1] > 0:
                 s_img = cv2.imread("..\\GUI\\unsafe_left.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width // 4
@@ -337,7 +337,7 @@ class ComputerVisionBackApp:
                 frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
                 print("Don't Pass left is not Secure")
 
-            elif disc[0][0][0] < 0:
+            elif disc[0][0][1] < 0:
                 s_img = cv2.imread("..\\GUI\\safe_left.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width // 4
@@ -351,7 +351,7 @@ class ComputerVisionBackApp:
                 frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
                 print("Pass left is Secure")
 
-            if disc[0][2][0] > 0:
+            if disc[0][2][1] > 0:
                 s_img = cv2.imread("..\\GUI\\unsafe_right.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width * 3 // 4
@@ -365,7 +365,7 @@ class ComputerVisionBackApp:
                 frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
                 print("Don't Pass right is not Secure")
 
-            elif disc[0][2][0] < 0:
+            elif disc[0][2][1] < 0:
                 s_img = cv2.imread("..\\GUI\\safe_right.png", -1)
                 y_offset = self.height * 3 // 4
                 x_offset = self.width * 3 // 4
