@@ -158,17 +158,13 @@ class DataHolder:
 
     def get_frame(self):
         if len(self.frame_stack) != 0:
-            return self.frame_stack.pop()
-        elif len(self.frame_stack) == 1:
-            return self.frame_stack[0]
+            return self.frame_stack[len(self.frame_stack)-1]
         else:
             pass
 
     def get_discrete(self):
         if len(self.discrete_stack) != 0:
-            return self.discrete_stack.pop()
-        elif len(self.discrete_stack) == 1:
-            return self.discrete_stack[0]
+            return self.discrete_stack[len(self.discrete_stack) - 1]
         else:
             pass
 

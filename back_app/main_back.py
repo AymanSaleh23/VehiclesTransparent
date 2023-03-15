@@ -59,12 +59,12 @@ class BackMode:
                 self.computer_vision_back_instance.data_holder.set_discrete(received_discrete)
 
                 direct_distance = self.us_obj.distance_read()
-                abs_dist = math_model(data=received_discrete[0],
-                                      vehicle_length=received_discrete[1],
-                                      direct_distance=direct_distance,
-                                      theta=self.computer_vision_back_instance.front_vehicle_center[0])
-                print(f"Front Vehicle Center: {self.computer_vision_back_instance.front_vehicle_center[0]}")
-                print(f"Absolute Distances: {abs_dist}")
+                # abs_dist = math_model(data=received_discrete[0],
+                #                       vehicle_length=received_discrete[1],
+                #                       direct_distance=direct_distance,
+                #                       theta=self.computer_vision_back_instance.front_vehicle_center[0])
+                # print(f"Front Vehicle Center: {self.computer_vision_back_instance.front_vehicle_center[0]}")
+                # print(f"Absolute Distances: {abs_dist}")
 
             print(f"received_fd.get_discrete(): {received_discrete}")
             print(f'Data: \n{received_discrete}')

@@ -328,7 +328,7 @@ class ComputerVisionBackApp:
                 y_offset = self.height * 3 // 4
                 x_offset = self.width // 4
                 y1, y2 = y_offset, y_offset + s_img.shape[0]
-                x1, x2 = x_offset, x_offset + s_img.shape[1]
+                x1, x2 = x_offset - s_img.shape[1], x_offset
 
                 alpha_s = s_img[:, :, 3] / 255.0
                 alpha_l = 1.0 - alpha_s
@@ -342,7 +342,7 @@ class ComputerVisionBackApp:
                 y_offset = self.height * 3 // 4
                 x_offset = self.width // 4
                 y1, y2 = y_offset, y_offset + s_img.shape[0]
-                x1, x2 = x_offset, x_offset + s_img.shape[1]
+                x1, x2 = x_offset - s_img.shape[1], x_offset
 
                 alpha_s = s_img[:, :, 3] / 255.0
                 alpha_l = 1.0 - alpha_s
