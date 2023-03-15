@@ -3,7 +3,7 @@ import time
 import torch, cv2, sys
 import mathematics.mathlib
 import screeninfo
-
+from communication.com_socket import DataHolder
 # Object Detection Class
 
 
@@ -14,6 +14,9 @@ class SingleCardDetection:
     CONFIDENCE_THRESHOLD = 0.6
 
     def __init__(self):
+        self.screen = screeninfo.get_monitors()[0]
+        self.width, self.height = self.screen.width, self.screen.height
+
         print("Loading Object Detection")
         print("Running YOLOv5n")
         # You can select the size of your model as shown in the previous image.
@@ -112,8 +115,10 @@ class ComputerVisionBackApp:
         self.is_first_frame = True
         self.last_read_frame = None
         #TO_DO: Valeo Icon/Logo as a default pic.
-        self.current_streamed_frame = None
         self.last_streamed_frame = None
+        self.last_disc = None
+        self.data_holder = DataHolder()
+
         # Selecting the center for ROI 'region of interest',and its left and right distance.
         self.C_X, self.C_Y, self.tolerance = int(self.width // 2), int(self.height // 3), self.width//4
 
@@ -123,6 +128,7 @@ class ComputerVisionBackApp:
         # Read video (emulates Camera)
         self.video = cv2.VideoCapture(self.source)
         self.front_vehicle_center = self.width // 2
+        self.data_holder.reset_discrete()
         # received_video = cv2.VideoCapture(0)
 
     def video_filling_coordinates(self, x1, y1, x2, y2, detected_car_width, detected_car_height):
@@ -143,34 +149,33 @@ class ComputerVisionBackApp:
         self.timer_limit = timer_limit
         # Flag To Run Detection After timerLimit times
         self.periodic_timer = SingleCardDetection.DEF_VAL
-
+        self.sock = sock
         # Exit if video not opened.
         while not self.video.isOpened():
             self.video = cv2.VideoCapture(self.source)  # CAMERA - RECORDED VIDEO - SIMULATION
             print("Could not open video")
             time.sleep(1)
-            # sys.exit()
+            sys.exit()
 
         while sock.connect_mechanism():
             # read Frame by frame
-            ok, frame = self.video.read()
+            ok, cam_captured_frame = self.video.read()
+
             # Resize the Frame
-            frame = cv2.resize(frame, (self.width, self.height))
+            cam_captured_frame = cv2.resize(cam_captured_frame, (self.width, self.height))
 
             # Exit if video not opened.
             if not ok:
                 print('Cannot read video file')
                 sys.exit()
-                break
 
             else:
-
                 # read received Video
                 pass
 
             # Adjust ROI 'Region of interest'
             # To Make the detection and tracking Only for The ROI instead of the whole frame.
-            roi_frame = frame[self.C_Y:self.height, self.C_X - self.tolerance: self.C_X + self.tolerance]
+            roi_frame = cam_captured_frame[self.C_Y:self.height, self.C_X - self.tolerance: self.C_X + self.tolerance]
 
             # Detect the Car at the first frame and pass the result to the initial function of Tracking
             if self.is_first_frame:
@@ -249,6 +254,9 @@ class ComputerVisionBackApp:
 
                 # Tracking success
                 if ok:
+                    self.last_streamed_frame = self.data_holder.get_frame()
+                    self.last_disc = self.data_holder.get_discrete()
+
                     print('################### Car Tracking #####################')
                     print('BBOX : ', bbox)
                     print('######################################################')
@@ -282,15 +290,93 @@ class ComputerVisionBackApp:
                             roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
                                 self.last_streamed_frame if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
                                 else None
+
+                            cam_captured_frame = self.update_warning(cam_captured_frame, self.last_disc)
                         except Exception:
                             print("Frame have no Size to reshape")
                 else:
                     print('++++++++++++++++ Tracking Failed +++++++++++++++++')
 
             # Showing The Video Frame
-            self.last_read_frame = frame
+            window_name = 'Back View'
+            cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
+            cv2.moveWindow(window_name, self.screen.x - 1, self.screen.y - 1)
+            cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN,
+                                  cv2.WINDOW_FULLSCREEN)
+            cv2.imshow(window_name, cam_captured_frame)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
             time.sleep(0.01)
 
-            self.last_streamed_frame = self.current_streamed_frame
-        video.release()
+        self.video.release()
         cv2.destroyAllWindows()
+
+    def update_warning(self, frame, disc):
+        """
+        asynchronously update flags in left and right to inform user not to pass
+        """
+        secure = [True, True]
+        # while True:
+
+        #   [ [[left_dist, ang], [center_dist, ang], [right_dist, ang]],length ]
+        print(f"\n\n\nself.bm.received_fd.get_discrete(){disc}\n\n\n")
+
+        if disc is not None:
+            if disc[0][0][1] > 0:
+                s_img = cv2.imread("..\\GUI\\unsafe_left.png", -1)
+                y_offset = self.height * 3 // 4
+                x_offset = self.width // 4
+                y1, y2 = y_offset, y_offset + s_img.shape[0]
+                x1, x2 = x_offset - s_img.shape[1], x_offset
+
+                alpha_s = s_img[:, :, 3] / 255.0
+                alpha_l = 1.0 - alpha_s
+                frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+                print("Don't Pass left is not Secure")
+
+            elif disc[0][0][1] < 0:
+                s_img = cv2.imread("..\\GUI\\safe_left.png", -1)
+                y_offset = self.height * 3 // 4
+                x_offset = self.width // 4
+                y1, y2 = y_offset, y_offset + s_img.shape[0]
+                x1, x2 = x_offset - s_img.shape[1], x_offset
+
+                alpha_s = s_img[:, :, 3] / 255.0
+                alpha_l = 1.0 - alpha_s
+                frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+                print("Pass left is Secure")
+
+            if disc[0][2][1] > 0:
+                s_img = cv2.imread("..\\GUI\\unsafe_right.png", -1)
+                y_offset = self.height * 3 // 4
+                x_offset = self.width * 3 // 4
+                y1, y2 = y_offset, y_offset + s_img.shape[0]
+                x1, x2 = x_offset, x_offset + s_img.shape[1]
+
+                alpha_s = s_img[:, :, 3] / 255.0
+                alpha_l = 1.0 - alpha_s
+                frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+                print("Don't Pass right is not Secure")
+
+            elif disc[0][2][1] < 0:
+                s_img = cv2.imread("..\\GUI\\safe_right.png", -1)
+                y_offset = self.height * 3 // 4
+                x_offset = self.width * 3 // 4
+                y1, y2 = y_offset, y_offset + s_img.shape[0]
+                x1, x2 = x_offset, x_offset + s_img.shape[1]
+
+                alpha_s = s_img[:, :, 3] / 255.0
+                alpha_l = 1.0 - alpha_s
+                frame[y1:y2, x1:x2, 0] = (alpha_s * s_img[:, :, 0] + alpha_l * frame[y1:y2, x1:x2, 0])
+                frame[y1:y2, x1:x2, 1] = (alpha_s * s_img[:, :, 1] + alpha_l * frame[y1:y2, x1:x2, 1])
+                frame[y1:y2, x1:x2, 2] = (alpha_s * s_img[:, :, 2] + alpha_l * frame[y1:y2, x1:x2, 2])
+                print("Pass right is Secure")
+
+        return frame

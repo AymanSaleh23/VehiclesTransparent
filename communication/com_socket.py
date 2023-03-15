@@ -153,19 +153,32 @@ class Client:
 
 class DataHolder:
     def __init__(self):
-        self.frame, self.discrete = None, None
+        self.frame_stack = []
+        self.discrete_stack = []
 
     def get_frame(self):
-        return self.frame
+        if len(self.frame_stack) != 0:
+            return self.frame_stack[len(self.frame_stack)-1]
+        else:
+            pass
 
     def get_discrete(self):
-        return self.discrete
+        if len(self.discrete_stack) != 0:
+            return self.discrete_stack[len(self.discrete_stack) - 1]
+        else:
+            pass
 
     def set_frame(self, frame):
-        self.frame = frame
+        if frame is not None:
+            self.frame_stack.append(frame)
+        else:
+            print("No Frame to set in Data Holder")
 
     def set_discrete(self, discrete):
-        self.discrete = discrete
-
+        if discrete is not None:
+            self.discrete_stack.append(discrete)
+        else:
+            print("No Discrete to set in Data Holder")
     def reset_discrete(self):
-        self.discrete = [[[-1, 45], [-1, 90], [-1, 135]], -1]
+        self.discrete_stack = [[[-1, 45], [-1, 90], [-1, 135]], -1]
+

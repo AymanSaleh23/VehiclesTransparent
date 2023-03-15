@@ -1,5 +1,6 @@
 from communication.com_socket import Server
-import cv2
+import cv2, pickle, struct
+
 
 s = Server("127.0.0.1", 10050)
 

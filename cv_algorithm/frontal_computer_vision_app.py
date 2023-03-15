@@ -6,6 +6,7 @@ import torch
 import screeninfo
 
 from mathematics.mathlib import map_values_ranges
+from communication.com_socket import *
 
 
 """
