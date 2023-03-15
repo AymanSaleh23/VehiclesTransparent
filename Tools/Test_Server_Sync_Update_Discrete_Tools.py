@@ -1,6 +1,7 @@
 from threading import Thread
 from communication.com_socket import Server
 import time
+
 s1 = Server(ip="192.168.1.11", port=20029, name="Socket_Sender")
 t1 = Thread(target=s1.send)
 t1.setDaemon(True)
