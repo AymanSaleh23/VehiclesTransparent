@@ -16,7 +16,7 @@ from cv_algorithm.frontal_computer_vision_app import ComputerVisionFrontal
 class FrontMode:
     current_v_length = 5
 
-    def __init__(self, ip="127.0.0.1", port=20070, timeout=1, source=0, name="Front Sender"):
+    def __init__(self, ip="127.0.0.1", port=30070, timeout=1, source=0, name="Front Sender"):
         '''
         - Create CV object.
         - run Cv_obj.run_front() in thread.
@@ -63,9 +63,10 @@ class FrontMode:
             self.to_send_fd.set_discrete(disc)
             self.to_send_fd.set_frame(self.computer_vision_frontal_instance.frame_to_send)
 
-            print(f'APP: to send: {self.to_send_fd.get_discrete()}')
+            print(f'APP: to send: {self.to_send_fd.discrete_stack}')
             time.sleep(0.02)
         self.data_sock_send.s.close()
+        self.data_sock_send.client_socket.close()
 
     def update_all(self, send_fd, data_sock):
         while self.data_sock_send.connect_mechanism():
