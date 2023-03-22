@@ -31,7 +31,7 @@ class SerialComm:
             self.connection_state = False
             print("Failed Initialization Serial")
 
-    def send_angles(self, data_query):
+    def send_query(self, data_query):
         if self.connection_state:
             try:
                 # Encode the data as JSON
@@ -39,7 +39,7 @@ class SerialComm:
                 encoded_data = json_data.encode(encoding='utf-8')
                 self.ser.write(encoded_data)
 
-                print(f"Command: {data_query}")
+                print(f">>>Serial Debug Command: {data_query}")
                 
             except Exception:
                 print("Communication Breaked & Reading")
@@ -55,7 +55,7 @@ class SerialComm:
             self.connection_state = True
             print(f"Restarting Serial: {self.__str__()}")
 
-    def receive_distances(self):
+    def receive_query(self):
         if self.connection_state:
             try:
                 while self.ser.in_waiting > 0:
@@ -69,7 +69,7 @@ class SerialComm:
                     if loaded_data != self.received_data:
                         self.received_data = loaded_data
 
-                print("Debug Receive: ", self.received_data)
+                print(">>>Serial Debug Receive: ", self.received_data)
                 return self.received_data
 
             except Exception:
