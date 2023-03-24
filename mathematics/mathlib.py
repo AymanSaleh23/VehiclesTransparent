@@ -77,7 +77,7 @@ def math_model(data=[[2, 0], [2, -70], [3, 80]], vehicle_length=4, direct_distan
     a_lengths = [vehicle_length * abs(sin(radians(theta))) / abs(sin(radians(alphas[i]))) for i in range(0, 3)]
 
     # Tested
-    total_length_x = [relatives[i] + abs(b_lengths[i]) for i in range(0, 3)]
+    total_length_x = [direct_distance + abs(b_lengths[i]) for i in range(0, 3)]
     total_length_y = [relatives[i] + abs(a_lengths[i]) for i in range(0, 3)]
 
     # Tested
