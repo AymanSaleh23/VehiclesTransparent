@@ -35,7 +35,7 @@ def math_model(data=[[2, 0], [2, -70], [3, 80]], vehicle_length=4, direct_distan
     # data is list of 3 lists
     # each list have [car_distance, car_angle]
 
-    if None not in data:
+    if (None not in data) and (direct_distance > 0) and (60 <= theta <= 120) and (vehicle_length > 0):
         relatives = [relative_dist[0] for relative_dist in data]
 
         phis = [angle[1] for angle in data]
