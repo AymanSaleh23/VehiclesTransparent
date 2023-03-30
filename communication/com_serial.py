@@ -77,6 +77,7 @@ class SerialComm:
                 print("Serial Closed")
                 self.connection_state = False
                 self.ser = None
+                time.sleep(0.2)
                 return [-1, -1, -1]
         else:
             print("Communication Status is False")

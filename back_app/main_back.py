@@ -77,7 +77,7 @@ class BackMode:
             print(f'Direct Distance: \n{self.direct_distance}')
 
             time.sleep(0.01)
-            self.computer_vision_back_instance.data_holder.reset_discrete()
+            # self.computer_vision_back_instance.data_holder.reset_discrete()
             # self.received_fd.reset_discrete()
         self.data_sock_receive.s.close()
 
