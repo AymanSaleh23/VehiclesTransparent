@@ -63,7 +63,8 @@ class BackMode:
             if received_discrete is not None and type(self.computer_vision_back_instance.front_vehicle_center) is list:
                 # Update frames which is received from socket.
                 self.computer_vision_back_instance.data_holder.set_discrete(received_discrete)
-
+                angles = [-1, self.computer_vision_back_instance.front_vehicle_center[0], -1]
+                self.ser_get_distance.send_query({"ORIENT": angles})
                 #direct_distance = self.us_obj.distance_read()
                 if self.direct_distance is not None:
                     abs_dist = math_model(data=received_discrete[0],
@@ -83,5 +84,7 @@ class BackMode:
 
     def distance_fetcher(self):
         while True:
-            self.direct_distance = [section for section in self.ser_get_distance.receive_query()]
+            received = self.ser_get_distance.receive_query()
+            if received:
+                self.dist_list = received["DISTANCE"]
             time.sleep(0.3)
