@@ -27,7 +27,7 @@ class FrontMode:
         # instance for run ComputerVisionFrontal class
         self.ip, self.port, self.timeout, self.name = ip, port, timeout, name
         self.data_sock_send = Server(ip=self.ip, port=self.port, timeout=self.timeout, name=self.name)
-        self.ser_get_distance = SerialComm(port="COM10", name="Receiver", baudrate=115200)
+        self.ser_get_distance = SerialComm(port="COM11", name="Receiver", baudrate=115200)
 
         self.source = source
         self.to_send_fd = DataHolder()
@@ -59,7 +59,7 @@ class FrontMode:
             if self.computer_vision_frontal_instance.angle_to_send is None:
                 self.cv_angle_list = [-1, -1, -1]
 
-            self.ser_get_distance.send_query(self.cv_angle_list)
+            self.ser_get_distance.send_query({"ORIENT": self.cv_angle_list})
             # Check if the last received values is different
             #for section in range(0, len(self.servo_obj_list)):
                 # self.servo_obj_list[section].set_angle(self.cv_angle_list[section])
@@ -88,5 +88,6 @@ class FrontMode:
 
     def distance_fetcher(self):
         while True:
-            self.dist_list = [section for section in self.ser_get_distance.receive_query()]
+            received = self.ser_get_distance.receive_query()
+            self.dist_list = received["ORIENT"]
             time.sleep(0.3)
