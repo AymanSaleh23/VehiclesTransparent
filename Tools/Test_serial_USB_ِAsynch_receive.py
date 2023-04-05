@@ -5,6 +5,6 @@ if __name__ == '__main__':
 
     while True:
         ss.serial_command = '1'
-        print(f">>>APP: {ss.get_value()}")
+        print(f">>>APP: {ss.send_query()}")
         ss.serial_command = '2'
-        print(f">>>APP: {ss.get_value()}")
+        print(f">>>APP: {ss.send_query()}")

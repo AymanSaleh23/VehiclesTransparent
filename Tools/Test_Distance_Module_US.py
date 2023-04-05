@@ -1,4 +1,4 @@
-from distances.dist_measure import Measure
+from rpi_app.distances.dist_measure import Measure
 import time
 u1 = Measure(27, 22)
 u2 = Measure(23, 24)

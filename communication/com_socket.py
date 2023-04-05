@@ -179,6 +179,8 @@ class DataHolder:
             self.discrete_stack.append(discrete)
         else:
             print("No Discrete to set in Data Holder")
+
     def reset_discrete(self):
-        self.discrete_stack = [[[-1, 45], [-1, 90], [-1, 135]], -1]
+        if len(self.discrete_stack) != 0:
+            self.discrete_stack = self.discrete_stack[len(self.discrete_stack)-1]
 

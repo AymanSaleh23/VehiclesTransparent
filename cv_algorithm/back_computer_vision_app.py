@@ -150,6 +150,9 @@ class ComputerVisionBackApp:
         # Flag To Run Detection After timerLimit times
         self.periodic_timer = SingleCardDetection.DEF_VAL
         self.sock = sock
+
+        frames_counter = 0
+        first_frame = True
         # Exit if video not opened.
         while not self.video.isOpened():
             self.video = cv2.VideoCapture(self.source)  # CAMERA - RECORDED VIDEO - SIMULATION
@@ -178,10 +181,10 @@ class ComputerVisionBackApp:
             roi_frame = cam_captured_frame[self.C_Y:self.height, self.C_X - self.tolerance: self.C_X + self.tolerance]
 
             # Detect the Car at the first frame and pass the result to the initial function of Tracking
-            if self.is_first_frame:
-
+            if frames_counter >= detect_per_frame or first_frame:
                 # detecting a car in ROI
                 self.x1, self.y1, self.x2, self.y2, self.text, self.conf = self.od.detect(roi_frame)
+
                 if self.conf != 0:
                     w = round(abs(self.x2 - self.x1))
                     h = round(abs(self.y2 - self.y1))
@@ -195,48 +198,20 @@ class ComputerVisionBackApp:
                     ok = self.ot.track_init(roi_frame, self.bbox)
                     # Rais up the flag of detecting the first frame and getting the initial BBOX for
                     # tracking successfully.
-                    self.is_first_frame = False
-                    frame_counter = 0
-
-                    print('*********************** First Frame Detection  ***********************')
+                    frames_counter = 0
+                    first_frame = False
+                    print('############### Car Detection After A Periodic Timer ###############')
                     print('BBOX : ', self.bbox)
-                    print('**********************************************************************')
+                    print("===================")
+                    print("Metadata :  x1: ", self.x1, ' , y1: ', self.y1,
+                                    ' , x2: ', self.x2, ' , y2: ', self.y2, ' , text_conf: ', self.text)
+                    print("===================")
+                    print('####################################################################')
 
-            else:
+                print('****************************************** Repeat Detection '
+                      '******************************************')
 
-                if self.periodic_timer % timer_limit == 0:
-
-                    if self.periodic_timer >= detect_per_frame:
-
-                        self.x1, self.y1, self.x2, self.y2, self.text, self.conf = self.od.detect(roi_frame)
-
-                    # So there is a car detected
-                    if self.conf != 0:
-                        w = round(abs(self.x2 - self.x1))
-                        h = round(abs(self.y2 - self.y1))
-                        self.x1, self.y1, self.x2, self.y2 = self.video_filling_coordinates(self.x1, self.y1, self.x2,
-                                                                                            self.y2, w, h)
-
-                        w = round(abs(self.x2 - self.x1))
-                        h = round(abs(self.y2 - self.y1))
-
-                        # Define the bounding box and pass it for tracking
-                        self.bbox = (self.x1, self.y1, w, h)
-                        ok = self.ot.track_init(roi_frame, self.bbox)
-                        print('############### Car Detection After A Periodic Timer ###############')
-                        print('BBOX : ', self.bbox)
-                        print("===================")
-                        print("Metadata :  x1: ", self.x1, ' , y1: ', self.y1,
-                                        ' , x2: ', self.x2, ' , y2: ', self.y2, ' , text_conf: ', self.text)
-                        print("===================")
-                        print('####################################################################')
-
-                    if self.periodic_timer % self.timer_limit == 0:
-                        self.periodic_timer = 0
-                    print('****************************************** Repeat Detection '
-                          '******************************************')
-
-            self.periodic_timer = self.periodic_timer + 1     # Increment the Counter of The Period_counter Flag
+            frames_counter += 1     # Increment the Counter of The Period_counter Flag
 
             print('========================================== TIME : ', self.periodic_timer,
                   '=============================================')
@@ -244,13 +219,13 @@ class ComputerVisionBackApp:
             if self.conf != 0:
                 # Start Tracking
                 # Start timer To Calculate FPS
-                timer = cv2.getTickCount()
+                #timer = cv2.getTickCount()
 
                 # Update tracker
-                ok, bbox = self.ot.update_track(roi_frame)
+                #ok, self.bbox = self.ot.update_track(roi_frame)
 
                 # Calculate Frames per second (FPS)
-                self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
+                #self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
 
                 # Tracking success
                 if ok:
@@ -258,19 +233,22 @@ class ComputerVisionBackApp:
                     self.last_disc = self.data_holder.get_discrete()
 
                     print('################### Car Tracking #####################')
-                    print('BBOX : ', bbox)
+                    print('BBOX : ', self.bbox)
                     print('######################################################')
-                    row_data = [0, 0, 0, 0]
+
                     self.front_vehicle_center = mathematics.mathlib.frame_to_positions(
-                        row_data=[bbox[0], bbox[1], bbox[2], bbox[3]], frame_size=[self.width, self.height], mode="BACK")
+                        row_data=[self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3]],
+                        frame_size=[self.width, self.height], mode="BACK")
+
                     # (x1,y1)
-                    p1 = (int(bbox[0]), int(bbox[1]))
+                    p1 = (int(self.bbox[0]), int(self.bbox[1]))
                     # (x2,y2)
-                    p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
+                    p2 = (int(self.bbox[0] + self.bbox[2]), int(self.bbox[1] + self.bbox[3]))
                     # Blue Rectangle For Tracking
                     cv2.rectangle(roi_frame, p1, p2, (0, 0, 255), 3)
                     # The Tracked Part Of The original Frame
-                    self.tracking_area = roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])]
+                    self.tracking_area = roi_frame[self.bbox[1]: (self.bbox[1]+self.bbox[3]),
+                                         self.bbox[0]: (self.bbox[0]+self.bbox[2])]
                     print('########################################## tracking_area SHAPE : ', self.tracking_area.shape)
                     # Resize the streamedData
                     if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
@@ -287,7 +265,7 @@ class ComputerVisionBackApp:
                                   self.last_streamed_frame.shape)
                             # The next instruction will put the streamed frame on the tracked car frame.
                             # In Future plans we cane use image blending or image superimposing concepts.
-                            roi_frame[bbox[1]: (bbox[1]+bbox[3]), bbox[0]: (bbox[0]+bbox[2])] = \
+                            roi_frame[self.bbox[1]: (self.bbox[1]+self.bbox[3]), self.bbox[0]: (self.bbox[0]+self.bbox[2])] = \
                                 self.last_streamed_frame if (self.tracking_area.shape[0] != 0 or self.tracking_area.shape[1] != 0) \
                                 else None
 
