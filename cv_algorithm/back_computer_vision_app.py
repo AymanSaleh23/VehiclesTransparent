@@ -219,13 +219,13 @@ class ComputerVisionBackApp:
             if self.conf != 0:
                 # Start Tracking
                 # Start timer To Calculate FPS
-                timer = cv2.getTickCount()
+                #timer = cv2.getTickCount()
 
                 # Update tracker
-                ok, self.bbox = self.ot.update_track(roi_frame)
+                #ok, self.bbox = self.ot.update_track(roi_frame)
 
                 # Calculate Frames per second (FPS)
-                self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
+                #self.fps = cv2.getTickFrequency() / (cv2.getTickCount() - timer)
 
                 # Tracking success
                 if ok:
@@ -235,9 +235,11 @@ class ComputerVisionBackApp:
                     print('################### Car Tracking #####################')
                     print('BBOX : ', self.bbox)
                     print('######################################################')
-                    row_data = [0, 0, 0, 0]
+
                     self.front_vehicle_center = mathematics.mathlib.frame_to_positions(
-                        row_data=[self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3]], frame_size=[self.width, self.height], mode="BACK")
+                        row_data=[self.bbox[0], self.bbox[1], self.bbox[2], self.bbox[3]],
+                        frame_size=[self.width, self.height], mode="BACK")
+
                     # (x1,y1)
                     p1 = (int(self.bbox[0]), int(self.bbox[1]))
                     # (x2,y2)
@@ -245,7 +247,8 @@ class ComputerVisionBackApp:
                     # Blue Rectangle For Tracking
                     cv2.rectangle(roi_frame, p1, p2, (0, 0, 255), 3)
                     # The Tracked Part Of The original Frame
-                    self.tracking_area = roi_frame[self.bbox[1]: (self.bbox[1]+self.bbox[3]), self.bbox[0]: (self.bbox[0]+self.bbox[2])]
+                    self.tracking_area = roi_frame[self.bbox[1]: (self.bbox[1]+self.bbox[3]),
+                                         self.bbox[0]: (self.bbox[0]+self.bbox[2])]
                     print('########################################## tracking_area SHAPE : ', self.tracking_area.shape)
                     # Resize the streamedData
                     if self.tracking_area.shape[1] == 0 or self.tracking_area.shape[0] == 0:
